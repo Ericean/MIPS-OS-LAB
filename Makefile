@@ -44,3 +44,5 @@ clean:
 	rm -rf *.o *~ $(vmlinux_elf)
 
 include include.mk
+start:
+	/OSLAB/gxemul -E testmips -C R3000 -M 64 ./gxemul/vmlinux
