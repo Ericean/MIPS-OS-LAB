@@ -31,7 +31,9 @@ LEAF(_start)           /*在asm.h中定义的叶子函数，叶子函数不调�
   set up stack 
   you can reference the memory layout in the include/mmu.h
 */
-
+	/*setup kernel stack*/
+	lui sp, 0x8040
+	j	main
 			
 loop:
 	j	loop
