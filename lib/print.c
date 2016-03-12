@@ -57,20 +57,75 @@ lp_Print(void (*output)(void *, char *, int),
     int length;
 
     for(;;) {
-	{ 
 	    /* scan for the next '%' */
 	    /* flush the string found so far */
 
 	    /* are we hitting the end? */
-	}
+
+		while(*fmt!='%'){
+		if(*fmt=='\0') return;
+		OUTPUT(arg, fmt, 1);
+		fmt++;
+		}
 
 	/* we found a '%' */
 	
-	/* check for long */
+	
+		padc = ' ';
+		width = -1;
+		prec = -1;
+		longFlag = 0;
+	reswitch:
+		switch (*fmt++) {
 
-	/* check for other prefixes */
+		// flag to pad on the right
+		case '-':
+			padc = ' ';
+			ladjust=1;
+			goto reswitch;
 
-	/* check format flag */
+		// flag to pad with 0's instead of spaces
+		case '0':
+			padc = '0';
+			goto reswitch;
+
+		// width field
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			for (prec = 0; ; ++fmt) {
+				prec = prec * 10 + c - '0';
+				c = *fmt;
+				if (c < '0' || c > '9')
+					break;
+			}
+			goto process_precision;
+
+		case '*':
+			prec = va_arg(ap, int);
+			goto process_precision;
+
+		case '.':
+			if (width < 0)
+				width = 0;
+			goto reswitch;
+
+
+		process_precision:
+			if (width < 0)
+				width = prec, prec = -1;
+			goto reswitch;
+		/* check for long */
+		case 'l':
+			longFlag++;
+			goto reswitch;	/* check format flag */
+		}
 	negFlag = 0;
 	switch (*fmt) {
 	 case 'b':
