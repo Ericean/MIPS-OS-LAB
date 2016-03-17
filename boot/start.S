@@ -33,6 +33,7 @@ LEAF(_start)           /*在asm.h中定义的叶子函数，叶子函数不调�
 */
 	/*setup kernel stack*/
 	lui sp, 0x8040
+	addiu sp, sp, 0
 	j	main
 			
 loop:

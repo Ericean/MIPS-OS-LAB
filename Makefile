@@ -45,4 +45,7 @@ clean:
 
 include include.mk
 start:
-	/OSLAB/gxemul -E testmips -C R3000 -M 64 ./gxemul/vmlinux
+	/OSLAB/gxemul -E testmips  -C R3000 -M 64 ./gxemul/vmlinux
+test:
+	
+	/OSLAB/gxemul -E testmips -v -V  -C R3000 -M 64 ./gxemul/vmlinux
