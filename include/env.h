@@ -11,7 +11,7 @@
 #define LOG2NENV	10
 #define NENV		(1<<LOG2NENV)
 #define ENVX(envid)	((envid) & (NENV - 1))
-#define GET_ENV_INDEX(envid) (((envid)>> 11)<<6)
+#define GET_ENV_ASID(envid) (((envid)>> 11)<<6)
 
 // Values of env_status in struct Env
 #define ENV_FREE	0

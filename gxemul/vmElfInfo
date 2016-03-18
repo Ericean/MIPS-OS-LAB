@@ -1,0 +1,158 @@
+ELF Header:
+  Magic:   7f 45 4c 46 01 02 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, big endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           MIPS R3000
+  Version:                           0x1
+  Entry point address:               0x80010000
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          110644 (bytes into file)
+  Flags:                             0x50001001, noreorder, o32, mips32
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         3
+  Size of section headers:           40 (bytes)
+  Number of section headers:         14
+  Section header string table index: 11
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+  [ 1] .except_vec3      PROGBITS        80000080 0000a0 000028 00  AX  0   0  4
+  [ 2] .text             PROGBITS        80010000 010020 002368 00 WAX  0   0 16
+  [ 3] .reginfo          MIPS_REGINFO    80012368 012388 000018 18   A  0   0  4
+  [ 4] .date             PROGBITS        80012380 0123a0 0005c0 00  WA  0   0 32
+  [ 5] .bss              NOBITS          80012940 012960 0000a0 00  WA  0   0 16
+  [ 6] .scommon          NOBITS          800129e0 012960 000018 00  WA  0   0  4
+  [ 7] .kernelstk        PROGBITS        803f8000 012960 008000 00  WA  0   0  1
+  [ 8] .pdr              PROGBITS        00000000 01a960 000520 00      0   0  4
+  [ 9] .mdebug.abi32     PROGBITS        00000000 01ae80 000000 00      0   0  1
+  [10] .comment          PROGBITS        00000000 01ae80 000140 00      0   0  1
+  [11] .shstrtab         STRTAB          00000000 01afc0 000072 00      0   0  1
+  [12] .symtab           SYMTAB          00000000 01b264 0005c0 10     13  39  4
+  [13] .strtab           STRTAB          00000000 01b824 0002f6 00      0   0  1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings)
+  I (info), L (link order), G (group), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+
+There are no section groups in this file.
+
+Program Headers:
+  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+  REGINFO        0x012388 0x80012368 0x80012368 0x00018 0x00018 R   0x4
+  LOAD           0x0000a0 0x80000080 0x80000080 0x128c0 0x12978 RWE 0x20
+  LOAD           0x012960 0x803f8000 0x803f8000 0x08000 0x08000 RW  0x1
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     .reginfo 
+   01     .except_vec3 .text .reginfo .date .bss .scommon 
+   02     .kernelstk 
+
+There is no dynamic section in this file.
+
+There are no relocations in this file.
+
+There are no unwind sections in this file.
+
+Symbol table '.symtab' contains 92 entries:
+   Num:    Value  Size Type    Bind   Vis      Ndx Name
+     0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND 
+     1: 80000080     0 SECTION LOCAL  DEFAULT    1 
+     2: 80010000     0 SECTION LOCAL  DEFAULT    2 
+     3: 80012368     0 SECTION LOCAL  DEFAULT    3 
+     4: 80012380     0 SECTION LOCAL  DEFAULT    4 
+     5: 80012940     0 SECTION LOCAL  DEFAULT    5 
+     6: 800129e0     0 SECTION LOCAL  DEFAULT    6 
+     7: 803f8000     0 SECTION LOCAL  DEFAULT    7 
+     8: 00000000     0 SECTION LOCAL  DEFAULT    8 
+     9: 00000000     0 SECTION LOCAL  DEFAULT    9 
+    10: 00000000     0 SECTION LOCAL  DEFAULT   10 
+    11: 00000000     0 SECTION LOCAL  DEFAULT   11 
+    12: 00000000     0 SECTION LOCAL  DEFAULT   12 
+    13: 00000000     0 SECTION LOCAL  DEFAULT   13 
+    14: 00000000     0 FILE    LOCAL  DEFAULT  ABS start.S
+    15: 803f8000     0 NOTYPE  LOCAL  DEFAULT    7 KERNEL_STACK
+    16: 80010040     0 NOTYPE  LOCAL  DEFAULT    2 loop
+    17: 00000000     0 FILE    LOCAL  DEFAULT  ABS main.c
+    18: 00000000     0 FILE    LOCAL  DEFAULT  ABS init.c
+    19: 00000000     0 FILE    LOCAL  DEFAULT  ABS console.c
+    20: 00000000     0 FILE    LOCAL  DEFAULT  ABS env.c
+    21: 80012948     4 OBJECT  LOCAL  DEFAULT    5 env_free_list
+    22: 00000000     0 FILE    LOCAL  DEFAULT  ABS genex.S
+    23: 800125b8     0 NOTYPE  LOCAL  DEFAULT    4 timer_irq
+    24: 80012664     0 NOTYPE  LOCAL  DEFAULT    4 NOPAGE
+    25: 80012650     0 NOTYPE  LOCAL  DEFAULT    4 NoCOW
+    26: 00000000     0 FILE    LOCAL  DEFAULT  ABS print.c
+    27: 80011c20    25 OBJECT  LOCAL  DEFAULT    2 theFatalMsg
+    28: 00000000     0 FILE    LOCAL  DEFAULT  ABS printf.c
+    29: 80010a00   148 FUNC    LOCAL  DEFAULT    2 myoutput
+    30: 00000000     0 FILE    LOCAL  DEFAULT  ABS traps.c
+    31: 00000000     0 FILE    LOCAL  DEFAULT  ABS pmap.c
+    32: 80010c58    64 FUNC    LOCAL  DEFAULT    2 alloc
+    33: 80012950     4 OBJECT  LOCAL  DEFAULT    5 freemem
+    34: 80010c98     8 FUNC    LOCAL  DEFAULT    2 boot_pgdir_walk
+    35: 80010cb8    28 FUNC    LOCAL  DEFAULT    2 page_initpp
+    36: 80012954     4 OBJECT  LOCAL  DEFAULT    5 page_free_list
+    37: 00000000     0 FILE    LOCAL  DEFAULT  ABS tlb_asm.S
+    38: 80011c14     0 NOTYPE  LOCAL  DEFAULT    2 NOFOUND
+    39: 80010200  1272 FUNC    GLOBAL DEFAULT    2 lp_Print
+    40: 80010ad0   100 FUNC    GLOBAL DEFAULT    2 _panic
+    41: 800101b8    60 FUNC    GLOBAL DEFAULT    2 printstr
+    42: 800123a0     0 OBJECT  GLOBAL DEFAULT    4 KERNEL_SP
+    43: 80010a94    60 FUNC    GLOBAL DEFAULT    2 printf
+    44: 80010d6c     8 FUNC    GLOBAL DEFAULT    2 page_insert
+    45: 80011ae4   228 FUNC    GLOBAL DEFAULT    2 pageout
+    46: 80010d74   152 FUNC    GLOBAL DEFAULT    2 page_lookup
+    47: 80010cd4     8 FUNC    GLOBAL DEFAULT    2 page_alloc
+    48: 800126c0   308 FUNC    GLOBAL DEFAULT    4 handle_reserved
+    49: 80012940     4 OBJECT  GLOBAL DEFAULT    5 envs
+    50: 80010be0   120 FUNC    GLOBAL DEFAULT    2 mips_detect_memory
+    51: 80010880   384 FUNC    GLOBAL DEFAULT    2 PrintNum
+    52: 80010140    80 FUNC    GLOBAL DEFAULT    2 bzero
+    53: 80010190    20 FUNC    GLOBAL DEFAULT    2 printcharc
+    54: 80010ca0     8 FUNC    GLOBAL DEFAULT    2 boot_map_segment
+    55: 800129e0     4 OBJECT  GLOBAL DEFAULT    6 npage
+    56: 800123a4     0 FUNC    GLOBAL DEFAULT    4 ret_from_exception
+    57: 80400000     0 NOTYPE  GLOBAL DEFAULT  ABS end
+    58: 80011bd0    80 FUNC    GLOBAL DEFAULT    2 tlb_out
+    59: 800129e4     4 OBJECT  GLOBAL DEFAULT    6 boot_pgdir
+    60: 80010000    76 FUNC    GLOBAL DEFAULT    2 _start
+    61: 80400000     0 NOTYPE  GLOBAL DEFAULT  ABS KVPT
+    62: 80010ca8     8 FUNC    GLOBAL DEFAULT    2 mips_vm_init
+    63: 80010778   264 FUNC    GLOBAL DEFAULT    2 PrintString
+    64: 800100e4    92 FUNC    GLOBAL DEFAULT    2 bcopy
+    65: 80012388     0 OBJECT  GLOBAL DEFAULT    4 tlbra
+    66: 80000080    40 FUNC    GLOBAL DEFAULT    1 except_vec3
+    67: 80012800   308 FUNC    GLOBAL DEFAULT    4 handle_tlb
+    68: 80010050    52 FUNC    GLOBAL DEFAULT    2 main
+    69: 800106f8   128 FUNC    GLOBAL DEFAULT    2 PrintChar
+    70: 80010e14  3280 FUNC    GLOBAL DEFAULT    2 page_check
+    71: 80010e0c     8 FUNC    GLOBAL DEFAULT    2 page_remove
+    72: 80010cdc     8 FUNC    GLOBAL DEFAULT    2 page_free
+    73: 80012480   312 FUNC    GLOBAL DEFAULT    4 handle_int
+    74: 800125b8   240 FUNC    GLOBAL DEFAULT    4 do_refill
+    75: 80012384     0 OBJECT  GLOBAL DEFAULT    4 delay
+    76: 800125b8     0 FUNC    GLOBAL DEFAULT    4 do_reserved
+    77: 800129e8     4 OBJECT  GLOBAL DEFAULT    6 maxpa
+    78: 80012944     4 OBJECT  GLOBAL DEFAULT    5 curenv
+    79: 80010ce4    48 FUNC    GLOBAL DEFAULT    2 page_decref
+    80: 800101a4    20 FUNC    GLOBAL DEFAULT    2 halt
+    81: 80010090    84 FUNC    GLOBAL DEFAULT    2 mips_init
+    82: 800129ec     4 OBJECT  GLOBAL DEFAULT    6 basemem
+    83: 80012960   128 OBJECT  GLOBAL DEFAULT    5 exception_handlers
+    84: 80010cb0     8 FUNC    GLOBAL DEFAULT    2 page_init
+    85: 80010d14     8 FUNC    GLOBAL DEFAULT    2 pgdir_walk
+    86: 800129f0     4 OBJECT  GLOBAL DEFAULT    6 extmem
+    87: 80010b40   124 FUNC    GLOBAL DEFAULT    2 trap_init
+    88: 80010bbc    28 FUNC    GLOBAL DEFAULT    2 set_except_vector
+    89: 800129f4     4 OBJECT  GLOBAL DEFAULT    6 pages
+    90: 80012380     0 OBJECT  GLOBAL DEFAULT    4 mCONTEXT
+    91: 80010d1c    80 FUNC    GLOBAL DEFAULT    2 tlb_invalidate
+
+No version information found in this file.

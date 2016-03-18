@@ -57,75 +57,65 @@ lp_Print(void (*output)(void *, char *, int),
     int length;
 
     for(;;) {
+	{ 
 	    /* scan for the next '%' */
+	    char *fmtStart = fmt;
+	    while ( (*fmt != '\0') && (*fmt != '%')) {
+		fmt ++;
+	    }
+
 	    /* flush the string found so far */
+	    OUTPUT(arg, fmtStart, fmt-fmtStart);
 
 	    /* are we hitting the end? */
-
-		while(*fmt!='%'){
-		if(*fmt=='\0') return;
-		OUTPUT(arg, fmt, 1);
-		fmt++;
-		}
+	    if (*fmt == '\0') break;
+	}
 
 	/* we found a '%' */
+	fmt ++;
 	
-	
-		padc = ' ';
-		width = -1;
-		prec = -1;
-		longFlag = 0;
-	reswitch:
-		switch (*fmt++) {
+	/* check for long */
+	if (*fmt == 'l') {
+	    longFlag = 1;
+	    fmt ++;
+	} else {
+	    longFlag = 0;
+	}
 
-		// flag to pad on the right
-		case '-':
-			padc = ' ';
-			ladjust=1;
-			goto reswitch;
+	/* check for other prefixes */
+	width = 0;
+	prec = -1;
+	ladjust = 0;
+	padc = ' ';
 
-		// flag to pad with 0's instead of spaces
-		case '0':
-			padc = '0';
-			goto reswitch;
+	if (*fmt == '-') {
+	    ladjust = 1;
+	    fmt ++;
+	}
 
-		// width field
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			for (prec = 0; ; ++fmt) {
-				prec = prec * 10 + c - '0';
-				c = *fmt;
-				if (c < '0' || c > '9')
-					break;
-			}
-			goto process_precision;
+	if (*fmt == '0') {
+	    padc = '0';
+	    fmt++;
+	}
 
-		case '*':
-			prec = va_arg(ap, int);
-			goto process_precision;
+	if (IsDigit(*fmt)) {
+	    while (IsDigit(*fmt)) {
+		width = 10 * width + Ctod(*fmt++);
+	    }
+	}
 
-		case '.':
-			if (width < 0)
-				width = 0;
-			goto reswitch;
-
-
-		process_precision:
-			if (width < 0)
-				width = prec, prec = -1;
-			goto reswitch;
-		/* check for long */
-		case 'l':
-			longFlag++;
-			goto reswitch;	/* check format flag */
+	if (*fmt == '.') {
+	    fmt ++;
+	    if (IsDigit(*fmt)) {
+		prec = 0;
+		while (IsDigit(*fmt)) {
+		    prec = prec*10 + Ctod(*fmt++);
 		}
+	    }
+	}
+
+
+	/* check format flag */
 	negFlag = 0;
 	switch (*fmt) {
 	 case 'b':
@@ -155,15 +145,9 @@ lp_Print(void (*output)(void *, char *, int),
 
 	 case 'o':
 	 case 'O':
-	    if (longFlag) { 
-		num = va_arg(ap, long int);
-	    } else { 
-		num = va_arg(ap, int); 
-	    }
-	    length = PrintNum(buf, num, 8, 0, width, ladjust, padc, 0);
-	    OUTPUT(arg, buf, length);
-	    break;
+	//v?????????????????
 
+	//A?????????????????
 	 case 'u':
 	 case 'U':
 	    if (longFlag) { 

@@ -44,7 +44,9 @@
 		mfc0	v0,CP0_CAUSE                     
 		sw	v0,TF_CAUSE(sp)                  
 		mfc0	v0,CP0_EPC                       
-		sw	v0,TF_EPC(sp)                    
+		sw	v0,TF_EPC(sp)
+		mfc0	v0, CP0_BADVADDR        
+		sw	v0, TF_BADVADDR(sp)            
 		mfhi	v0                               
 		sw	v0,TF_HI(sp)                     
 		mflo	v0                               
@@ -91,7 +93,7 @@
 		ori	t0,0x3                          
 		xori	t0,0x3                          
 		mtc0	t0,CP0_STATUS                    
-		lw	v0,TF_STATUS(sp)                 
+		lw	v0,TF_STATUS(sp)             
 		li	v1, 0xff00 				 
 		and	t0, v1 					 
 		nor	v1, $0, v1 				 
@@ -158,7 +160,13 @@
 	li	sp, 0x82000000
 	j	2f
 	nop
-1:	lw	sp, KERNEL_SP
-	
+1:
+	bltz	sp, 2f
+	nop
+	lw	sp, KERNEL_SP
+	nop
+
 2:	nop
+
+
 .endm

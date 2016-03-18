@@ -8,23 +8,19 @@ drivers_dir	  := drivers
 boot_dir	  := boot
 init_dir	  := init
 lib_dir		  := lib
+mm_dir		  := mm
 tools_dir	  := tools
-test_dir          :=
 vmlinux_elf	  := gxemul/vmlinux
 
 link_script   := $(tools_dir)/scse0_3.lds
 
-modules		  := boot drivers init lib $(test_dir)
+modules		  := boot drivers init lib mm
 objects		  := $(boot_dir)/start.o			  \
 				 $(init_dir)/main.o			  \
 				 $(init_dir)/init.o			  \
 			   	 $(drivers_dir)/gxconsole/console.o \
-				 $(lib_dir)/*.o
-
-ifneq ($(test_dir),)
-objects :=$(objects) $(test_dir)/*.o
-endif
-
+				 $(lib_dir)/*.o				  \
+				 $(mm_dir)/*.o
 
 .PHONY: all $(modules) clean
 
@@ -44,8 +40,3 @@ clean:
 	rm -rf *.o *~ $(vmlinux_elf)
 
 include include.mk
-start:
-	/OSLAB/gxemul -E testmips  -C R3000 -M 64 ./gxemul/vmlinux
-test:
-	
-	/OSLAB/gxemul -E testmips -v -V  -C R3000 -M 64 ./gxemul/vmlinux

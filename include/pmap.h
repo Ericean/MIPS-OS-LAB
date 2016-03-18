@@ -38,7 +38,7 @@ static inline struct Page *
 pa2page(u_long pa)
 {
 	if (PPN(pa) >= npage)
-		panic("pa2page called with invalid pa");
+		panic("pa2page called with invalid pa: %x", pa);
 	return &pages[PPN(pa)];
 }
 

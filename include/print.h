@@ -15,7 +15,7 @@
 #include <stdarg.h>
 
 /* this is the maximum width for a variable */
-#define		LP_MAX_BUF	80
+#define		LP_MAX_BUF	1000
 
 /* -*-
  * output function takes an void pointer which is passed in as the
