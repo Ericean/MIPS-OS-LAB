@@ -8,7 +8,7 @@
 
 #include "error.h"
 
-
+#include "types.h"
 
 
 
@@ -65,7 +65,7 @@ void mips_detect_memory()
 }
 
 
-
+// return virtual address
 static void * alloc(u_int n, u_int align, int clear)
 
 {
@@ -77,46 +77,20 @@ static void * alloc(u_int n, u_int align, int clear)
 	u_long alloced_mem;
 
 	// initialize freemem if this is the first time
+	if(freemem == 0) freemem =(u_long)end;
+	freemem=ROUND(freemem,align);
+	
+	//if (freemem+n < freemem || freemem+n > KERNBASE+maxpa)
+   	// panic("out of memory during vm_init");
 
+	alloced_mem = (void *)freemem;
 
+ 	freemem = freemem + n;
 
-
-
-
-
-	///////////////////////////////////////////////////////////////////
-
-	// Your code here:
-
-	//	Step 1: round freemem up to be aligned properly
-
-	//	Step 2: save current value of freemem as allocated chunk
-
-	//	Step 3: increase freemem to record allocation
-
-	//	Step 4: clear allocated chunk if necessary
-
-	//	Step 5: return allocated chunk
-
-
-
-	//v?????????????????
-
-	  
-
-
-
-
-
-
-
-	//how to return allocated chunk?? 
-
-	//save the allocated address to an globe variable
+	if(clear)  bzero(alloced_mem,n);
 
 	return (void *)alloced_mem;
 
-	//A?????????????????
 
 }
 
@@ -154,23 +128,27 @@ static void * alloc(u_int n, u_int align, int clear)
 
 // 
 
+
+
+//return a virtual page table entry address
 static Pte* boot_pgdir_walk(Pde *pgdir, u_long va, int create)
 
 {
 
-	//v?????????????????
 
-	Pde *targetPde;
+	Pde *pde;
 
-	Pte *pageTable;
+	Pte *ptable;
 
-	targetPde = (Pde *)(&pgdir[PDX(va)]);
+	pde = (Pde *)(&pgdir[PDX(va)]);
+	
+	//a little doubt
+	if(*pde&PTE_V)
+		ptable =(Pte *)KADDR(PTE_ADDR(*pde));
+	else
+	{
 
-	pageTable = KADDR(PTE_ADDR(*targetPde));
-
-	if( *targetPde == 0){
-
-		if(create == 0)
+		if(!create)
 
 			return 0;
 
@@ -180,11 +158,8 @@ static Pte* boot_pgdir_walk(Pde *pgdir, u_long va, int create)
 
 		//the page size equal to a page table struct size 4096 = 4 * 1024 = 4 * 2^10
 
-			
-
-
-
-
+		 ptable= (Pte*)alloc(BY2PG, BY2PG, 1);
+		 *pde = PADDR(ptable)|PTE_R;
 
 		//what is the function of PTE_R
 
@@ -193,24 +168,14 @@ static Pte* boot_pgdir_walk(Pde *pgdir, u_long va, int create)
 			
 
 
-
-		
-
 		}
 
 	}
 
 	
 
-	return (Pte *)(&pageTable[PTX(va)]);
+	return (Pte *)(&ptable[PTX(va)]);
 
-
-
-		
-
-
-
-	//A?????????????????
 
 }
 
@@ -228,25 +193,17 @@ void boot_map_segment(Pde *pgdir, u_long va, u_long size, u_long pa, int perm)
 
 {
 
-	//v?????????????????
 
-	int nToMap,i;
+	int i;
 
 	Pte * pageTable;
 
+	for(i=0; i<size;i+=BY2PG)
+	{
+		
+		*boot_pgdir_walk(pgdir,va,1)=(pa+i)|perm|PTE_V;
 
-
-
-
-
-
-
-
-
-
-
-
-	//A?????????????????
+	}
 
 }
 
@@ -291,9 +248,11 @@ void mips_vm_init()
 	//v?????????????????
 
 	pgdir = (Pde *)alloc(BY2PG,BY2PG,1);
+	
 
 	printf("to memory %x for struct page directory.\n",freemem);
 
+	
 	//mCONTEXT = (int)(*pgdir);
 
 	mCONTEXT = (int)(pgdir);
@@ -309,7 +268,7 @@ void mips_vm_init()
 	//create pgdir entry for all kernel virtual memory
 
 
-
+	
 	boot_pgdir_walk(pgdir,ULIM,1);
 
 	boot_map_segment(pgdir,ULIM,PDMAP,0,0);
@@ -328,7 +287,7 @@ void mips_vm_init()
 
 	
 
-	//A?????????????????
+	
 
 }
 
@@ -358,41 +317,29 @@ page_init(void)
 
 {
 
-	// The exaple code here marks all pages as free.
-
-	// However this is not truly the case.  What memory is free?
-
-	//  1) Mark page 0 as in use(for good luck) 
-
-	//  2) Mark the rest of base memory as free.
-
-	//  3) Then comes the IO hole [IOPHYSMEM, EXTPHYSMEM) => mark it as in use
-
-	//     So that it can never be allocated.      
-
-	//  4) Then extended memory(ie. >= EXTPHYSMEM):
-
-	//     ==> some of it's in use some is free. Where is the kernel?
-
-	//     Which pages are used for page tables and other data structures?    
-
-	//
-
-	// Change the code to reflect this.
-
-	//v?????????????????
-
 	int i;
+	int use;
 
 	LIST_INIT (&page_free_list);
 
+	//align free memoey to page boundry
+	alloc(0, BY2PG, 0);
+	for (i=0; i<npage; i++) {
+    
+    		use = 1;
+   		 //Bottom basemem bytes are free except page 0.
+    		if (i!=0 && i<basemem/BY2PG)
+      			use = 0;
 	
-
-
-
-
-
-	//A?????????????????
+    		// The memory over the kernel is free.
+   		 if (i >= (freemem-KERNBASE)/BY2PG)
+      			use = 0;
+	
+		//use pages to manage memory
+    		pages[i].pp_ref = use;
+   	 	if (!use)
+      			LIST_INSERT_HEAD(&page_free_list, &pages[i], pp_link);
+  }
 
 	
 
@@ -450,37 +397,19 @@ page_alloc(struct Page **pp)
 
 {
 
-	// Fill this function in
-
-	//v?????????????????
-
 	//pick the head of the free list
 
 	//then remove the first(head) element of the page free list :page_free_list
 
-	if(LIST_FIRST(&page_free_list) != 0){
-
-		//see page_check to see why use **pp here
-
+	if((*pp=LIST_FIRST(&page_free_list)) == NULL)
+		return -E_NO_MEM;
 		
-
-		//(*pp)->pp_ref++;
-
-		//printf("%x\n",*pp);
-
-
-
-
-
-//page initialization
-
-		
-
-		return 0;
-
-	}
-
+	LIST_REMOVE(*pp, pp_link);
+	//init page
+	page_initpp(*pp);	
+	bzero((Pte *)page2kva(*pp), BY2PG);
 	
+	return 0;
 
 	//if know the address of the allocated Page ,pp pointed to .
 
@@ -496,7 +425,7 @@ page_alloc(struct Page **pp)
 
 	
 
-	return -E_NO_MEM;
+	
 
 }
 
@@ -608,12 +537,6 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
 
 	pageTable = (Pte *)KADDR(PTE_ADDR(*targetPde));
 
-	
-
-
-
-
-
 			//printf("page allocate succeed in pgdir_walk");
 
 			
@@ -624,13 +547,6 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
 
 			
 
-
-
-		}
-
-	}
-
-	
 
 	
 

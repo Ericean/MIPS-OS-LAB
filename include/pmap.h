@@ -22,6 +22,7 @@ struct Page {
 };
 
 extern struct Page *pages;
+//compute offset
 static inline u_long
 page2ppn(struct Page *pp)
 {
