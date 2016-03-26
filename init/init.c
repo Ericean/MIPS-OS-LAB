@@ -15,9 +15,9 @@ void mips_init()
 	
 	
 	mips_vm_init();
-	//page_init();
-	//trap_init();
-	//page_check();
+	page_init();
+	trap_init();
+	page_check();
 	
 	//env_init();
 	

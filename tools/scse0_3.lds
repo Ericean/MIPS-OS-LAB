@@ -8,7 +8,7 @@ SECTIONS
  
 {
  
-. =0x80200000;
+. =0x80010000;
  
 .text :{
  
@@ -19,12 +19,13 @@ SECTIONS
    *(.fini)
  
   }
- 
-. =0x80400000;
- 
-.data :{*(.data)}
- 
+
 .bss :{*(.bss)}
+.sdata :{*(.sdata)}
+.data :{*(.data)}
+
+. =0x80400000;
+
 end =.;
  
 }
