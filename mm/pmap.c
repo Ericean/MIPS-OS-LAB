@@ -80,10 +80,10 @@ static void * alloc(u_int n, u_int align, int clear)
 
 	freemem = ROUND(freemem, align);
 
-	/*if ( (freemem + n < freemem) ||(freemem + n > KERNBASE+maxpa)){
-		printf("freemem%x\n",freemem+n);
-		printf("xx%x\n",KERNBASE+maxpa);
-	panic("out of memory during vm_init");}*/
+	if ( (freemem + n < freemem) || (freemem + n > KERNBASE + maxpa)) {
+
+		panic("out of memory during vm_init");
+	}
 
 	alloced_mem = (void *)freemem;
 
@@ -152,7 +152,7 @@ static Pte* boot_pgdir_walk(Pde *pgdir, u_long va, int create)
 		if (!create)return 0;
 
 		ptable = (Pte*)alloc(BY2PG, BY2PG, 1);
-		*pde = PADDR(ptable)|PTE_R|PTE_V;
+		*pde = PADDR(ptable) | PTE_R | PTE_V;
 
 
 	}
@@ -184,7 +184,7 @@ void boot_map_segment(Pde *pgdir, u_long va, u_long size, u_long pa, int perm)
 	for (i = 0; i < size; i += BY2PG)
 	{
 
-		*boot_pgdir_walk(pgdir, va+i, 1) = ((pa + i) | perm | PTE_V);
+		*boot_pgdir_walk(pgdir, va + i, 1) = ((pa + i) | perm | PTE_V);
 
 	}
 
@@ -484,7 +484,7 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
 		pageTablePage->pp_ref++;
 		pageTable = (Pte*)page2kva(pageTablePage);
 		//update pde
-		*pde = page2pa(pageTablePage) | PTE_R|PTE_V;
+		*pde = page2pa(pageTablePage) | PTE_R | PTE_V;
 
 	}
 	//return pte
