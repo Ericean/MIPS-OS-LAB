@@ -295,26 +295,29 @@ page_init(void)
 
 	LIST_INIT (&page_free_list);
 
-	//align free memoey to page boundry
+	//align free memory to page boundry
 	alloc(0, BY2PG, 0);
-
+	
+	//not sure if can flush the allocated pages
 	for (i = 0; i < npage; i++) {
 
 		use = 1;
 		//Bottom basemem bytes are free except page 0.
+		//not to touch kernel code
 		if (i != 0 && i < basemem / BY2PG)
 			use = 0;
 
 		//The memory over the kernel is free.
-		if (i >= (freemem - KERNBASE) / BY2PG)
-			use = 0;
+		// if (i >= (freemem - KERNBASE) / BY2PG)
+		// 	use = 0;
 
 		//use pages to manage memory
 		pages[i].pp_ref = use;
 		if (!use)
 			LIST_INSERT_HEAD(&page_free_list, &pages[i], pp_link);
-	}
 
+	}
+	// printf("%x\n",page2kva(&pages[0]));
 
 
 }
