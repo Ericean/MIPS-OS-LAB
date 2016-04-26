@@ -5,39 +5,26 @@
 #include <kclock.h>
 #include <trap.h>
 
-extern char aoutcode[];
-extern char boutcode[];
-
 void mips_init()
 {
 	printf("init.c:\tmips_init() is called\n");
 	mips_detect_memory();
 	
-	
 	mips_vm_init();
 	page_init();
-	trap_init();
-	page_check();
 	
-	//env_init();
-	
-	//ENV_CREATE(user_fktest);
-	//ENV_CREATE(user_pt1);
-	//ENV_CREATE(user_idle);
-	//ENV_CREATE(fs_serv);
-	//ENV_CREATE(user_fktest);
-	//ENV_CREATE(user_pingpong);
-	//ENV_CREATE(user_testfdsharing);	
-	//ENV_CREATE(user_testspawn);
-	//ENV_CREATE(user_testpipe);
-	//ENV_CREATE(user_testpiperace);
-	//ENV_CREATE(user_icode);
-	
-	//kclock_init();
-	//env_run(&envs[0]);
+	env_init();
 
-	//env_run(&envs[1]);
+
+	/*you can create some processes(env) here. in terms of binary code, please refer current directory/code_a.c
+	 * code_b.c*/
+	/*you may want to create process by MACRO, please read env.h file, in which you will find it. this MACRO is very
+	 * interesting, have fun please*/
+
+
 	
+	trap_init();
+	kclock_init();
 	panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	while(1);
 	panic("init.c:\tend of mips_init() reached!");

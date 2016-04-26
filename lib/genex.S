@@ -2,10 +2,6 @@
 #include <asm/cp0regdef.h>
 #include <asm/asm.h>
 #include <stackframe.h>
-			.data
-			.global	KERNEL_SP;
-KERNEL_SP:
-			.word		0
 
 .macro	__build_clear_sti
 	STI
@@ -18,7 +14,7 @@ KERNEL_SP:
 .macro	BUILD_HANDLER exception handler clear
 	.align	5
 	NESTED(handle_\exception, TF_SIZE, sp)  
-	//.set	noat
+	.set	noat
 
 nop
 
@@ -50,7 +46,7 @@ FEXPORT(ret_from_exception)
 .set noreorder
 .align	5
 NESTED(handle_int, TF_SIZE, sp)
-//.set	noat
+.set	noat
 
 //1: j 1b
 nop
@@ -71,7 +67,16 @@ END(handle_int)
 
 timer_irq:
 
-
+1:	j	sched_yield
+	nop
+	/*li t1, 0xff
+	lw    t0, delay
+	addu  t0, 1
+	sw	t0, delay
+	beq	t0,t1,1f	
+	nop*/
+	j	ret_from_exception
+	nop
 
 LEAF(do_reserved)
 END(do_reserved)
@@ -150,3 +155,4 @@ END(do_refill)
 
 BUILD_HANDLER reserved do_reserved cli
 BUILD_HANDLER tlb	do_refill	cli
+BUILD_HANDLER mod	page_fault_handler cli
