@@ -152,7 +152,7 @@ static Pte* boot_pgdir_walk(Pde *pgdir, u_long va, int create)
 		if (!create)return 0;
 
 		ptable = (Pte*)alloc(BY2PG, BY2PG, 1);
-		*pde = PADDR(ptable) | PTE_R | PTE_V;
+		*pde = PADDR(ptable) | PTE_V;
 
 
 	}
