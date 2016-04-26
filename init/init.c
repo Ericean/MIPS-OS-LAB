@@ -12,7 +12,7 @@ void mips_init()
 	
 	mips_vm_init();
 	page_init();
-	
+	//page_check();
 	env_init();
 
 
