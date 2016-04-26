@@ -199,7 +199,7 @@ env_alloc(struct Env **new, u_int parent_id)
     /*Step 3: Initialize every field of new Env with appropriate values*/
 	e->env_id = mkenvid(e);
 	e->env_parent_id = parent_id;
-	e->env_status = ENV_RUNNABLE;
+	e->env_status = ENV_NOT_RUNNABLE;
 	
 	e->env_ipc_recving = 0;
 	e->env_pgfault_handler = 0;
@@ -284,14 +284,18 @@ load_icode(struct Env *e, u_char *binary, u_int size)
 	int re;
     
     /*Step 1: alloc a page. */
-
-
+	
+	if ((re = page_alloc(&p)) < 0) {
+		panic("Couldn't alloc stack icode memory\n Can't start up\n");
+	}
     /*Step 2: Use appropriate perm to set initial stack for new Env. */
     /*Hint: The user-stack should be writable? */
-
+	  
+	if (page_insert(e->env_pgdir, p, USTACKTOP-BY2PG, PTE_D))
+	  panic("Failed to insert icode stack page\n");	
 
     /*Step 3:load the binary by using elf loader. */
-
+	load_elf(binary, size, &entry_point, );
 
     /***Your Question Here***/
     /*Step 4:Set CPU's PC register as appropriate value. */
@@ -405,7 +409,7 @@ env_run(struct Env *e)
 	{
 	 struct Trapframe *old=(struct Trapframe *)(TIMESTACK - sizeof(struct Trapframe));
          bcopy(old, &(curenv->env_tf), (sizeof (struct Trapframe)));
-	 curenv->env_tf.pc = old->cp0_epc;
+	 curenv->env_tf.pc = old->cp0_epc;// very import to set the recover pc
 	}
     /*Step 2: Set 'curenv' to the new environment. */
 	curenv = e;
