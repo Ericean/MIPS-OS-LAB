@@ -21,10 +21,11 @@ void mips_init()
 	/*you may want to create process by MACRO, please read env.h file, in which you will find it. this MACRO is very
 	 * interesting, have fun please*/
 
-
-	
-	trap_init();
-	kclock_init();
+	ENV_CREATE(user_A);
+	//ENV_CREATE(user_B);
+	env_run(&envs[0]);
+	//trap_init();
+	//kclock_init();
 	panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	while(1);
 	panic("init.c:\tend of mips_init() reached!");

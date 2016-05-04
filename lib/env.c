@@ -214,7 +214,7 @@ env_alloc(struct Env **new, u_int parent_id)
     /*Step 5: Remove the new Env from Env free list*/
     LIST_REMOVE(e, env_link);
     *new = e;
-
+return 0;
 }
 
 /* Overview:
@@ -244,14 +244,20 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 	/*Step 1: load all content of bin into memory. */
 	for (i = 0; i < bin_size; i += BY2PG) {
 		/* Hint: You should alloc a page and increase the reference count of it. */
-		if(r=page_alloc(&p)<0) panic("Couldn't alloc icode memory\n Can't start up\n");
-		else r->pp_ref++;
-		
+		if(r=page_alloc(&p)<0) 
+		panic("Couldn't alloc icode memory\n Can't start up\n");
+		p->pp_ref++;
+		if(page_insert(env->env_pgdir, p, UTEXT+i,PTE_V|PTE_R))	
+		panic("Failed to insert bin");
+	bcopy(bin+i,(void *)page2kva(p),BY2PG);
 	}
 	/*Step 2: alloc pages to reach `sgsize` when `bin_size` < `sgsize`.
     * i has the value of `bin_size` now. */
 	while (i < sgsize) {
-		
+		if(r=page_alloc(&p)<0) 
+		panic("Couldn't alloc icode memory\n Can't start up\n");
+		p->pp_ref++;
+		if(page_insert(env->env_pgdir, p, UTEXT+i,PTE_V|PTE_R))		panic("Failed to map bin");
 
 	}
 	return 0;
@@ -295,7 +301,7 @@ load_icode(struct Env *e, u_char *binary, u_int size)
 	  panic("Failed to insert icode stack page\n");	
 
     /*Step 3:load the binary by using elf loader. */
-	load_elf(binary, size, &entry_point, );
+	load_elf(binary, size, &entry_point,e,load_icode_mapper);
 
     /***Your Question Here***/
     /*Step 4:Set CPU's PC register as appropriate value. */
@@ -314,6 +320,7 @@ void
 env_create(u_char *binary, int size)
 {
 	struct Env *e;
+	int r;
     /*Step 1: Use env_alloc to alloc a new env. */
 	 if ((r = env_alloc(&e, 0)) != 0)
    	 panic ("Can't allocate new environment: %e\n", r);
@@ -378,7 +385,7 @@ env_destroy(struct Env *e)
 		curenv = NULL;
         /* Hint:Why this? */
 		bcopy((void *)KERNEL_SP - sizeof(struct Trapframe),
-			  (void *)TIMESTACK - sizeof(struct Trapframe),
+			  TIMESTACK - sizeof(struct Trapframe),
 			  sizeof(struct Trapframe));
 		printf("i am killed ... \n");
 		sched_yield();
