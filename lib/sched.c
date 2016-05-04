@@ -13,8 +13,6 @@
  */
 void sched_yield(void)
 {
-
-
  static int i=0;
  while(1){
 

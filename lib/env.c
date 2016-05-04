@@ -199,7 +199,7 @@ env_alloc(struct Env **new, u_int parent_id)
     /*Step 3: Initialize every field of new Env with appropriate values*/
 	e->env_id = mkenvid(e);
 	e->env_parent_id = parent_id;
-	e->env_status = ENV_NOT_RUNNABLE;
+	e->env_status = ENV_RUNNABLE;
 	
 	e->env_ipc_recving = 0;
 	e->env_pgfault_handler = 0;
@@ -239,27 +239,39 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 	struct Page *p = NULL;
 	u_long i;
 	int r;
-	u_long offset = va - ROUNDDOWN(va, BY2PG);
-
+	char *map_to = ROUNDDOWN(va,BY2PG);
+	u_long to_alloc =ROUND(sgsize + va&0xFFF, BY2PG);
+	//u_long offset = va - ROUNDDOWN(va, BY2PG);
+	// printf("map_to: %x \n", map_to);
+	// printf("sgsize: %d \n", sgsize);
+	//printf("bsize: %d \n", bin_size);
+	// printf("to alloc: %d\n",to_alloc );
 	/*Step 1: load all content of bin into memory. */
-	for (i = 0; i < bin_size; i += BY2PG) {
+	for (i = 0; i < to_alloc; i += BY2PG) {
 		/* Hint: You should alloc a page and increase the reference count of it. */
 		if(r=page_alloc(&p)<0) 
 		panic("Couldn't alloc icode memory\n Can't start up\n");
 		p->pp_ref++;
-		if(page_insert(env->env_pgdir, p, UTEXT+i,PTE_V|PTE_R))	
+		if(page_insert(env->env_pgdir, p, map_to+i,PTE_V|PTE_R))	
 		panic("Failed to insert bin");
-	bcopy(bin+i,(void *)page2kva(p),BY2PG);
+		
 	}
+	printf("alloc success!\n");
+	printf("va: %x\n",(void *)va);
+	printf("bin: %x\n",(void *)bin);
+	printf("pa:  %x\n",va2pa(env->env_pgdir, va));
+
+	bcopy(bin,(u_char*)(va),bin_size);
+	//printf("load success!\n");
 	/*Step 2: alloc pages to reach `sgsize` when `bin_size` < `sgsize`.
     * i has the value of `bin_size` now. */
-	while (i < sgsize) {
-		if(r=page_alloc(&p)<0) 
-		panic("Couldn't alloc icode memory\n Can't start up\n");
-		p->pp_ref++;
-		if(page_insert(env->env_pgdir, p, UTEXT+i,PTE_V|PTE_R))		panic("Failed to map bin");
+	// while (i < sgsize) {
+	// 	if(r=page_alloc(&p)<0) 
+	// 	panic("Couldn't alloc icode memory\n Can't start up\n");
+	// 	p->pp_ref++;
+	// 	if(page_insert(env->env_pgdir, p, UTEXT+i,PTE_V|PTE_R))		panic("Failed to map bin");
 
-	}
+	// }
 	return 0;
 }
 /* Overview:
@@ -303,6 +315,7 @@ load_icode(struct Env *e, u_char *binary, u_int size)
     /*Step 3:load the binary by using elf loader. */
 	load_elf(binary, size, &entry_point,e,load_icode_mapper);
 
+	printf("entry_point: %x\n", entry_point);
     /***Your Question Here***/
     /*Step 4:Set CPU's PC register as appropriate value. */
 	e->env_tf.pc = entry_point;
@@ -414,12 +427,14 @@ env_run(struct Env *e)
     *  context switch.You can imitate env_destroy() 's behaviors.*/
 	if (curenv)
 	{
+		printf("%x\n",curenv);
 	 struct Trapframe *old=(struct Trapframe *)(TIMESTACK - sizeof(struct Trapframe));
-         bcopy(old, &(curenv->env_tf), (sizeof (struct Trapframe)));
+         bcopy(old, &(curenv->env_tf),sizeof(struct Trapframe));
 	 curenv->env_tf.pc = old->cp0_epc;// very import to set the recover pc
 	}
     /*Step 2: Set 'curenv' to the new environment. */
 	curenv = e;
+	e->env_runs++;
     /*Step 3: Use lcontext() to switch to its address space. */
 	lcontext(e->env_cr3);
 
@@ -427,7 +442,8 @@ env_run(struct Env *e)
      * environment   registers and drop into user mode in the
      * the   environment.
      */
+    printf("env 1 entry point: %x\n", e->env_cr3);
+	panic("8888888");
 	env_pop_tf(&(e->env_tf),GET_ENV_ASID(e->env_id));
     /* Hint: You should use GET_ENV_ASID there.Think why? */
-
 }
