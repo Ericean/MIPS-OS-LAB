@@ -44,6 +44,6 @@ run:
 test:
 	/OSLAB/gxemul -E testmips -v -V  -C R3000 -M 64 ./gxemul/vmlinux
 func:
-	/OSLAB/gxemul -E testmips -t  -C R3000 -M 64 ./gxemul/vmlinuxdbug:
+	/OSLAB/gxemul -E testmips -t  -C R3000 -M 64 ./gxemul/vmlinux
 dbug:
 	/OSLAB/gxemul -E testmips -p env_pop_tf  -C R3000 -M 64 ./gxemul/vmlinux

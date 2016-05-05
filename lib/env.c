@@ -241,34 +241,34 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 	int r;
 	char *map_to = ROUNDDOWN(va,BY2PG);
 	u_long to_alloc =ROUND(sgsize + va&0xFFF, BY2PG);
-	//u_long offset = va - ROUNDDOWN(va, BY2PG);
-	//  printf("map_to: %x \n", map_to);
+	u_long offset = va - ROUNDDOWN(va, BY2PG);
+	printf("va: %x \n", va);
+	printf("map_to: %x \n", map_to);
 	//  printf("sgsize: %d \n", sgsize);
 	// printf("bsize: %d \n", bin_size);
 
 	/*Step 1: load all content of bin into memory. */
-	for (i = 0; i < to_alloc; i += BY2PG) {
+	for (i = 0; i < bin_size; i += BY2PG) {
 		/* Hint: You should alloc a page and increase the reference count of it. */
 		if(r=page_alloc(&p)<0) 
 		panic("Couldn't alloc icode memory\n Can't start up\n");
 		p->pp_ref++;
-		if(page_insert(env->env_pgdir, p, map_to+i,PTE_V))	
+		if(page_insert(env->env_pgdir, p,map_to+i,PTE_V))	
 		panic("Failed to insert bin");
 		//printf("page to kva: %x\n",page2kva(p));
+		//printf("%x\n", (void*)page2kva(p)+offset);
 		bcopy(bin+i,(void*)page2kva(p),MIN(BY2PG,bin_size-i));
 	}
-	//printf("alloc success!\n");
-
-	//printf("load success!\n");
 	/*Step 2: alloc pages to reach `sgsize` when `bin_size` < `sgsize`.
     * i has the value of `bin_size` now. */
-	// while (i < sgsize) {
-	// 	if(r=page_alloc(&p)<0) 
-	// 	panic("Couldn't alloc icode memory\n Can't start up\n");
-	// 	p->pp_ref++;
-	// 	if(page_insert(env->env_pgdir, p, UTEXT+i,PTE_V|PTE_R))		panic("Failed to map bin");
+	while (i < sgsize) {
+		if(r=page_alloc(&p)<0) 
+		panic("Couldn't alloc icode memory\n Can't start up\n");
+		p->pp_ref++;
+		if(page_insert(env->env_pgdir, p, map_to+i,PTE_V))		
+		panic("Failed to map bin");
 
-	// }
+	}
 	return 0;
 }
 /* Overview:
