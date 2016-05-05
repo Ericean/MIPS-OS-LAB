@@ -22,10 +22,10 @@ void mips_init()
 	 * interesting, have fun please*/
 
 	ENV_CREATE(user_A);
-	//ENV_CREATE(user_B);
-	env_run(&envs[0]);
-	//trap_init();
-	//kclock_init();
+	ENV_CREATE(user_B);
+	//env_run(&envs[0]);
+	trap_init();
+	kclock_init();
 	panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	while(1);
 	panic("init.c:\tend of mips_init() reached!");
