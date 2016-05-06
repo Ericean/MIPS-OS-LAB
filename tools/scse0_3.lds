@@ -1,36 +1,31 @@
 OUTPUT_ARCH(mips)
- 
- 
- 
 ENTRY(_start)
- 
+
 SECTIONS
- 
 {
+
 . = 0x80000080;
 .except_vec3 : {
 *(.text.exc_vec3)
-} 
+}	
+  . = 0x80010000;
+  .text : {
+    *(.text)
+        }
 
-. =0x80010000;
- 
-.text :{
- 
-   *(.int)
- 
-   *(.text)
- 
-   *(.fini)
- 
+  .data : {
+	*(.data)
+	}
+
+  .bss  : {
+	*(.bss)
   }
 
-.bss :{*(.bss)}
-.sdata :{*(.sdata)}
-.data :{*(.data)}
+  .sdata : {
+  	*(.sdata)
+  }
+   
+   . = 0x80400000;
 
-. =0x80400000;
-
-end =.;
- 
+   end = . ;
 }
-
