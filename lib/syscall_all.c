@@ -210,7 +210,7 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
       return 0;
     }
   } else {
-    warn("sys_mem_map failed to map %d : 0x%x  to  %x : 0x%x",
+    panic("sys_mem_map failed to map %d : 0x%x  to  %x : 0x%x",
 	 srcid, srcva, dstid, dstva);
   }
   
