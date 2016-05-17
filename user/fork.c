@@ -229,20 +229,16 @@ extern void __asm_pgfault_handler(void);
 int
 fork(void)
 {
-	// Your code here.
-<<<<<<< HEAD
 	u_int envid;
 	//int pn;
 	Pte pte;
 	u_int addr, addr2;
-=======
-	u_int newenvid;
->>>>>>> 3762adbed65a351103043261cf12244a8d0b08fa
+
+
 	extern struct Env *envs;
 	extern struct Env *env;
 	u_int i;
 
-<<<<<<< HEAD
 	//install a pgfault handler
 	set_pagefault_handler(pgfault);
 	// alloc a child env
@@ -274,15 +270,15 @@ fork(void)
 		      printf("Couldn't map a page for the child exception stack\n");
 		      return -E_NO_MEM;
 		    }
-		    // if (sys_set_pgfault_handler(envid, (u_int)_asm_pgfault_handler, UXSTACKTOP)) {
-		    //   printf("Failed to set child's pgfault handler\n");
-		    //   return -E_UNSPECIFIED;
-		    // }
+		    if (sys_set_pgfault_handler(envid, (u_int)__asm_pgfault_handler, UXSTACKTOP)) {
+		      printf("Failed to set child's pgfault handler\n");
+		      return -E_UNSPECIFIED;
+		    }
 		    if (sys_set_env_status(envid, ENV_RUNNABLE)) {
 		      printf("Failed to mark child as runnable\n");
 		      return -E_UNSPECIFIED;
 		    }
-    return (envid); 
+    return envid; 
   }
 	
 =======
