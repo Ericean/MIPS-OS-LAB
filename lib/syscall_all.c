@@ -209,10 +209,30 @@ int sys_mem_unmap(int sysno, u_int envid, u_int va)
  */
 int sys_env_alloc(void)
 {
+<<<<<<< HEAD
+    ///////////////////////////////////////////////////////
+    //your code here
+    //
+	//struct Env *child;
+
+ 	struct Env *env;
+
+  	if (env_alloc(&env, curenv->env_id)) {
+    	return -E_NO_FREE_ENV;
+  	}
+
+  	env->env_status = ENV_NOT_RUNNABLE;
+  	bcopy(TIMESTACK-sizeof(struct Trapframe),&(env->env_tf),sizeof(struct Trapframe));
+  	env->env_tf.regs[2] = 0;
+  
+  return env->env_id;
+	
+=======
 	// Your code here.
 	int r;
 	struct Env *e;
 
+>>>>>>> 3762adbed65a351103043261cf12244a8d0b08fa
 
 	return e->env_id;
 	//	panic("sys_env_alloc not implemented");
@@ -232,12 +252,32 @@ int sys_env_alloc(void)
  */
 int sys_set_env_status(int sysno, u_int envid, u_int status)
 {
+<<<<<<< HEAD
+    ///////////////////////////////////////////////////////
+    //your code here
+	int r;
+	struct Env *e;
+
+	if (status != ENV_RUNNABLE && status != ENV_NOT_RUNNABLE)
+      return -E_INVAL;
+  // You should set envid2env's third argument to 1, which will
+  // check whether the current environment has permission to set
+  // envid's status.
+  	int ret = envid2env(envid, &e, 1);
+    if (ret)
+       return ret;
+    e->env_status = status;
+  return 0;
+    ///////////////////////////////////////////////////////
+	//panic("sys_env_set_status not implemented");
+=======
 	// Your code here.
 	struct Env *env;
 	int ret;
 
 	return 0;
 	//	panic("sys_env_set_status not implemented");
+>>>>>>> 3762adbed65a351103043261cf12244a8d0b08fa
 }
 
 /* Overview:
@@ -254,6 +294,16 @@ int sys_set_env_status(int sysno, u_int envid, u_int status)
  */
 int sys_set_trapframe(int sysno, u_int envid, struct Trapframe *tf)
 {
+<<<<<<< HEAD
+	int r;
+	struct Env *e;
+    int ret = envid2env(envid, &e, 1);
+    if (ret)
+       return ret;
+	e->env_tf = *tf;
+    return 0;
+=======
+>>>>>>> 3762adbed65a351103043261cf12244a8d0b08fa
 
 	return 0;
 }
@@ -288,6 +338,25 @@ void sys_panic(int sysno, char *msg)
  */
 void sys_ipc_recv(int sysno, u_int dstva)
 {
+<<<<<<< HEAD
+    ///////////////////////////////////////////////////////
+    //your code here
+    //
+	if(curenv->env_ipc_recving)
+		panic("already recving!!");
+	if(dstva>=UTOP)
+		panic("invalid dstva!!");
+
+	curenv->env_ipc_recving=1;
+	curenv->env_ipc_dstva= dstva;
+	curenv->env_status= ENV_NOT_RUNNABLE;
+
+	sched_yield();
+
+
+    ///////////////////////////////////////////////////////
+=======
+>>>>>>> 3762adbed65a351103043261cf12244a8d0b08fa
 }
 
 /* Overview:
@@ -310,11 +379,49 @@ void sys_ipc_recv(int sysno, u_int dstva)
 int sys_ipc_can_send(int sysno, u_int envid, u_int value, u_int srcva,
 					 u_int perm)
 {
+<<<<<<< HEAD
+    ///////////////////////////////////////////////////////
+    //your code here
+	struct Env *e;
+	struct Page *p;
+	Pte *pte;
+	int r, ret = 0;
+	if(r=envid2env(envid,&e,0)<0)
+		return r;
+	if(!e->env_ipc_recving)
+		return -E_IPC_NOT_RECV;
+
+	if (srcva != 0 && e->env_ipc_dstva != 0) {
+
+		if (srcva >= UTOP)
+			return -E_INVAL;
+		//still need perm validation
+		p=page_lookup(curenv->env_pgdir, srcva,0);
+		if(p==0){
+		printf("[%08x] page_lookup %08x failed in sys_ipc_can_send\n",
+				curenv->env_id, srcva);
+			return -E_INVAL;
+		}
+		r= page_insert(e->env_pgdir,p,e->env_ipc_dstva,perm);
+		if(r<0)
+			return r;
+		e->env_ipc_perm= perm;
+	}else{
+		e->env_ipc_perm = 0;
+	}
+
+
+	e->env_ipc_recving = 0;
+	e->env_ipc_from = curenv->env_id;
+	e->env_ipc_value = value;
+	e->env_status = ENV_RUNNABLE;
+=======
 
 	int r;
 	struct Env *e;
 	struct Page *p;
 
+>>>>>>> 3762adbed65a351103043261cf12244a8d0b08fa
 	return 0;
 }
 
