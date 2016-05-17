@@ -9,15 +9,12 @@ void mips_init()
 {
 	printf("init.c:\tmips_init() is called\n");
 	mips_detect_memory();
-	
 	mips_vm_init();
 	page_init();
-	//page_check();
 	env_init();
 	trap_init();
 	kclock_init();
-	ENV_CREATE(user_A);
-	ENV_CREATE(user_B);
+	ENV_CREATE(user_fktest);
 	panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	while(1);
 	panic("init.c:\tend of mips_init() reached!");
