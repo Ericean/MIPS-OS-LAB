@@ -1,8 +1,8 @@
 #include "lib.h"
 
-umain()
+void umain()
 {
-	writef("idle is running\n");
-	while(1)
-		writef("2!");
+	while (1) {
+		writef("IDLE!");
+	}
 }

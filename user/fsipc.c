@@ -19,10 +19,10 @@ fsipc(u_int type, void *fsreq, u_int dstva, u_int *perm)
 	u_int whom;
 	int r;
 	//we file system no. is 000000000000000000
-	ipc_send(envs[1].env_id, type, (u_int)fsreq, PTE_V|PTE_R);
-//	writef("fsipc:ending ipc send & recv dst:%x\n",dstva);
+	ipc_send(envs[1].env_id, type, (u_int)fsreq, PTE_V | PTE_R);
+	//	writef("fsipc:ending ipc send & recv dst:%x\n",dstva);
 	r =  ipc_recv(&whom, dstva, perm);
-//writef("fsipc:r = %d\n",r);
+	//writef("fsipc:r = %d\n",r);
 	return r;
 }
 
@@ -34,16 +34,19 @@ fsipc_open(const char *path, u_int omode, struct Fd *fd)
 {
 	u_int perm;
 	struct Fsreq_open *req;
-//writef("TTTTTTTTTT fsipc_open:enter path:%s\n",path);
-	req = (struct Fsreq_open*)fsipcbuf;
-	if (strlen(path) >= MAXPATHLEN)
+	//writef("TTTTTTTTTT fsipc_open:enter path:%s\n",path);
+	req = (struct Fsreq_open *)fsipcbuf;
+
+	if (strlen(path) >= MAXPATHLEN) {
 		return -E_BAD_PATH;
-	strcpy(req->req_path, path);
+	}
+
+	strcpy((char *)req->req_path, path);
 	req->req_omode = omode;
-//writef("fsipc_open:will to ipc send\n");
-//writef("fsipcbuf = %x,	req->req_path = %x,	vpd[req/PDMAP]=%x,	vpt[req/BY2PG]=%x\n",fsipcbuf,(u_int)req->req_path,vpd[(u_int)req/PDMAP],vpt[(u_int)req/BY2PG]);
-//writef("UTOP = %x,	ULIM = %x,	UTEXT = %x\n",UTOP,ULIM,UTEXT);
-//writef("UUUUUUUUUUUUUUfsipc_open:fd = %x\n",(u_int)fd);
+	//writef("fsipc_open:will to ipc send\n");
+	//writef("fsipcbuf = %x,	req->req_path = %x,	vpd[req/PDMAP]=%x,	vpt[req/BY2PG]=%x\n",fsipcbuf,(u_int)req->req_path,vpd[(u_int)req/PDMAP],vpt[(u_int)req/BY2PG]);
+	//writef("UTOP = %x,	ULIM = %x,	UTEXT = %x\n",UTOP,ULIM,UTEXT);
+	//writef("UUUUUUUUUUUUUUfsipc_open:fd = %x\n",(u_int)fd);
 	return fsipc(FSREQ_OPEN, req, (u_int)fd, &perm);
 }
 
@@ -58,13 +61,19 @@ fsipc_map(u_int fileid, u_int offset, u_int dstva)
 	u_int perm;
 	struct Fsreq_map *req;
 
-	req = (struct Fsreq_map*)fsipcbuf;
+	req = (struct Fsreq_map *)fsipcbuf;
 	req->req_fileid = fileid;
 	req->req_offset = offset;
-	if ((r=fsipc(FSREQ_MAP, req, dstva, &perm)) < 0)
+
+	if ((r = fsipc(FSREQ_MAP, req, dstva, &perm)) < 0) {
 		return r;
-	if ((perm&~(PTE_R|PTE_LIBRARY)) != (PTE_V))
-		user_panic("fsipc_map: unexpected permissions %08x for dstva %08x", perm, dstva);
+	}
+
+	if ((perm & ~(PTE_R | PTE_LIBRARY)) != (PTE_V)) {
+		user_panic("fsipc_map: unexpected permissions %08x for dstva %08x", perm,
+				   dstva);
+	}
+
 	return 0;
 }
 
@@ -74,7 +83,7 @@ fsipc_set_size(u_int fileid, u_int size)
 {
 	struct Fsreq_set_size *req;
 
-	req = (struct Fsreq_set_size*)fsipcbuf;
+	req = (struct Fsreq_set_size *)fsipcbuf;
 	req->req_fileid = fileid;
 	req->req_size = size;
 	return fsipc(FSREQ_SET_SIZE, req, 0, 0);
@@ -87,7 +96,7 @@ fsipc_close(u_int fileid)
 {
 	struct Fsreq_close *req;
 
-	req = (struct Fsreq_close*)fsipcbuf;
+	req = (struct Fsreq_close *)fsipcbuf;
 	req->req_fileid = fileid;
 	return fsipc(FSREQ_CLOSE, req, 0, 0);
 }
@@ -98,7 +107,7 @@ fsipc_dirty(u_int fileid, u_int offset)
 {
 	struct Fsreq_dirty *req;
 
-	req = (struct Fsreq_dirty*)fsipcbuf;
+	req = (struct Fsreq_dirty *)fsipcbuf;
 	req->req_fileid = fileid;
 	req->req_offset = offset;
 	return fsipc(FSREQ_DIRTY, req, 0, 0);
@@ -110,10 +119,13 @@ fsipc_remove(const char *path)
 {
 	struct Fsreq_remove *req;
 
-	req = (struct Fsreq_remove*)fsipcbuf;
-	if (strlen(path) >= MAXPATHLEN)
+	req = (struct Fsreq_remove *)fsipcbuf;
+
+	if (strlen(path) >= MAXPATHLEN) {
 		return -E_BAD_PATH;
-	strcpy(req->req_path, path);
+	}
+
+	strcpy((char *)req->req_path, path);
 	return fsipc(FSREQ_REMOVE, req, 0, 0);
 }
 
