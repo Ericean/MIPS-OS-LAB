@@ -63,6 +63,8 @@ u_int sys_getenvid(void)
  */
 void sys_yield(void)
 {
+	bcopy((int)KERNEL_SP-sizeof(struct Trapframe),TIMESTACK-sizeof(struct Trapframe),sizeof(struct Trapframe));
+	sched_yield();
 }
 
 /* Overview:
@@ -108,9 +110,14 @@ int sys_env_destroy(int sysno, u_int envid)
 int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
 {
 	// Your code here.
-	struct Env *env;
-	int ret;
-
+	struct Env *e;
+	if( envid2env(envid, &e, 1) < 0)
+		panic("sys_set_pgfault_handler not implemented");	
+	//printf("set pgfault handler\n");
+	e->env_pgfault_handler = func;
+	xstacktop = TRUP(xstacktop);
+	e->env_xstacktop = xstacktop;
+	return 0;
 
 	return 0;
 	//	panic("sys_set_pgfault_handler not implemented");
@@ -137,9 +144,29 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 {
 	// Your code here.
 	struct Env *env;
-	struct Page *ppage;
-	int ret;
-	ret = 0;
+	struct Page *pp;
+
+  perm = perm | PTE_V;
+  // if (perm & PTE_COW)
+  //   return -E_INVAL;
+	
+  if (va > UTOP) 
+    return -E_INVAL;
+
+  if (envid2env(envid, &env, 1))
+    return -E_BAD_ENV;
+  
+  if (page_alloc(&pp))
+    return -E_NO_MEM;
+  bzero((void*)page2kva(pp),BY2PG);
+
+  if (page_insert(env->env_pgdir, pp, va, perm))
+   {
+      page_free(pp);
+      return -E_NO_MEM;
+   }
+  
+  return 0;
 
 }
 
@@ -159,21 +186,35 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 				u_int perm)
 {
-	int ret;
-	u_int round_srcva, round_dstva;
 	struct Env *srcenv;
 	struct Env *dstenv;
-	struct Page *ppage;
+	struct Page *pp;
 	Pte *ppte;
 
-	ppage = NULL;
-	ret = 0;
-	round_srcva = ROUNDDOWN(srcva, BY2PG);
-	round_dstva = ROUNDDOWN(dstva, BY2PG);
+	srcva = ROUNDDOWN(srcva, BY2PG);
+	dstva = ROUNDDOWN(dstva, BY2PG);
 
-    //your code here
+  perm = perm | PTE_V;
 
-	return ret;
+  if ((srcva > UTOP) || (dstva > UTOP)) {
+    return -E_INVAL;
+  }
+  if (envid2env(srcid, &srcenv, 1)){
+    return -E_BAD_ENV;
+  }
+  if (envid2env(dstid, &dstenv, 1)) {
+    return -E_BAD_ENV;
+  }
+  if ((pp = page_lookup(srcenv->env_pgdir, srcva, &ppte)) != NULL) {
+    if (!page_insert(dstenv->env_pgdir, pp, dstva, perm)) {
+      return 0;
+    }
+  } else {
+    warn("sys_mem_map failed to map %d : 0x%x  to  %x : 0x%x",
+	 srcid, srcva, dstid, dstva);
+  }
+  
+  return -E_INVAL;
 }
 
 /* Overview:
@@ -188,11 +229,21 @@ int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
 int sys_mem_unmap(int sysno, u_int envid, u_int va)
 {
 	// Your code here.
-	int ret;
-	struct Env *env;
 
-	return ret;
-	//	panic("sys_mem_unmap not implemented");
+	struct Env *task;
+
+	if (envid2env(envid, &task, 1) < 0)
+		return -E_BAD_ENV;
+
+	if ((unsigned int)va >= UTOP || va != ROUNDDOWN(va, BY2PG)){
+		//panic("sys_mem_unmap 2 UTOP %x va %x %x",UTOP, va, ROUNDDOWN(va, BY2PG));
+		return -E_INVAL;
+	}
+
+	page_remove(task->env_pgdir, va);
+
+	return 0; 
+	
 }
 
 /* Overview:
@@ -211,11 +262,13 @@ int sys_env_alloc(void)
 {
  	struct Env *env;
 
-  	if (env_alloc(&env, curenv->env_id)) {
+  	if (env_alloc(&env, curenv->env_id)<0) {
     	return -E_NO_FREE_ENV;
   	}
 
   	env->env_status = ENV_NOT_RUNNABLE;
+  	env->env_parent_id = curenv->env_id;
+	//env->env_tf.pc = env->env_tf.cp0_epc;
   	bcopy(TIMESTACK-sizeof(struct Trapframe),&(env->env_tf),sizeof(struct Trapframe));
   	env->env_tf.regs[2] = 0;
   
@@ -237,21 +290,19 @@ int sys_env_alloc(void)
  */
 int sys_set_env_status(int sysno, u_int envid, u_int status)
 {
+  struct Env *env;
 
-	int r;
-	struct Env *e;
+  if ((status != ENV_FREE) &&
+      (status != ENV_RUNNABLE) &&
+      (status != ENV_NOT_RUNNABLE))
+    return -E_INVAL;
 
-	if (status != ENV_RUNNABLE && status != ENV_NOT_RUNNABLE)
-      return -E_INVAL;
-  // You should set envid2env's third argument to 1, which will
-  // check whether the current environment has permission to set
-  // envid's status.
-  	int ret = envid2env(envid, &e, 1);
-    if (ret)
-       return ret;
-    e->env_status = status;
+  if (envid2env(envid, &env, 1))
+    return -E_BAD_ENV;
+
+  env->env_status = status;
   return 0;
-  
+
 }
 
 /* Overview:
