@@ -16,7 +16,8 @@ void sched_yield(void)
  static int i=0;
  while(1){
 
-	i=(i+1)%NENV;
+  i=(i+1)%NENV;
+	//i=(i+1)%3;
 	    if (envs[i].env_status == ENV_RUNNABLE)
        env_run(&envs[i]);
    }

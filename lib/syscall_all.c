@@ -278,7 +278,7 @@ int sys_env_alloc(void)
 
     env->env_status = ENV_NOT_RUNNABLE;
     env->env_parent_id = curenv->env_id;
-    //env->env_tf.pc = env->env_tf.cp0_epc;
+    env->env_tf.pc = env->env_tf.cp0_epc;
     bcopy(TIMESTACK - sizeof(struct Trapframe), &(env->env_tf), sizeof(struct Trapframe));
     env->env_tf.regs[2] = 0;
 
