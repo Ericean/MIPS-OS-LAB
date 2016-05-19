@@ -14,7 +14,11 @@ void mips_init()
     env_init();
     trap_init();
     kclock_init();
+    //ENV_CREATE(user_pingpong)
+
     ENV_CREATE(user_fktest);
+    //env_run(&envs[0]);
+
     panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
     while(1);
     panic("init.c:\tend of mips_init() reached!");
