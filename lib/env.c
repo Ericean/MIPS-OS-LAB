@@ -253,7 +253,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 			panic("Couldn't alloc icode memory\n Can't start up\n");
 		p->pp_ref++;
 		
-		if(r=page_insert(env->env_pgdir, p, map_to+i,PTE_V)<0)	
+		if(r=page_insert(env->env_pgdir, p, map_to+i,PTE_R)<0)	
 			panic("Failed to insert bin");
 		bcopy(bin+i,(void*)page2kva(p)+offset,MIN(BY2PG,bin_size-i));
 	}
@@ -264,7 +264,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 		if(r=page_alloc(&p)<0) 
 		panic("Couldn't alloc icode memory\n Can't start up\n");
 		p->pp_ref++;
-		if(page_insert(env->env_pgdir, p, map_to+i,PTE_V))		
+		if(page_insert(env->env_pgdir, p, map_to+i,PTE_R))		
 		panic("Failed to map bin");
 		i+=BY2PG;
 	}
