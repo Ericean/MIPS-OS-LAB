@@ -276,10 +276,7 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 	// lcontext(PADDR(env->env_pgdir));
 	// bcopy(bin,(void*)va,bin_size);
 	// printf("success\n");
-    printf("0x400000: %x\n", va2pa(env->env_pgdir,0x400000));
-    printf("0x400004: %x\n", va2pa(env->env_pgdir,0x400004));
-    printf("0x40000c: %x\n", va2pa(env->env_pgdir,0x40000c));
-    printf("0x400b5c: %x\n", va2pa(env->env_pgdir,0x400b5c));
+  
 	return 0;
 }
 /* Overview:
