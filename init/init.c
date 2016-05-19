@@ -14,18 +14,10 @@ void mips_init()
 	page_init();
 	//page_check();
 	env_init();
-
-
-	/*you can create some processes(env) here. in terms of binary code, please refer current directory/code_a.c
-	 * code_b.c*/
-	/*you may want to create process by MACRO, please read env.h file, in which you will find it. this MACRO is very
-	 * interesting, have fun please*/
-
-	ENV_CREATE(user_A);
-	ENV_CREATE(user_B);
-	//env_run(&envs[0]);
 	trap_init();
 	kclock_init();
+    ENV_CREATE(user_fktest);
+
 	panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	while(1);
 	panic("init.c:\tend of mips_init() reached!");
