@@ -308,8 +308,8 @@ page_init(void)
 			use = 0;
 
 		//The memory over the kernel is free.
-		// if (i >= (freemem - KERNBASE) / BY2PG)
-		// 	use = 0;
+		if (i >= (freemem - KERNBASE) / BY2PG)
+			use = 0;
 
 		//use pages to manage memory
 		pages[i].pp_ref = use;

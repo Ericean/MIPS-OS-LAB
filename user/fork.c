@@ -169,7 +169,7 @@ duppage(u_int envid, u_int pn)
         if (pte & PTE_LIBRARY)
         {
             // Library pages are always copied no-matter what
-            //pte = pte | PTE_R|PTE_V;
+            pte = pte | PTE_R|PTE_V;
             if ((r = syscall_mem_map(0, addr, envid, addr, pte)))
                 user_panic("Failing to map 0x%x ro : %e\n", addr, r);
         }
@@ -249,7 +249,7 @@ fork(void)
     set_pgfault_handler(pgfault);
     // alloc a child env
     envid = syscall_env_alloc();
-    writef("env_alloc fork...\n");
+   
     if (envid < 0)
         return -1;//error
 
