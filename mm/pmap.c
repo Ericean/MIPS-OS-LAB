@@ -466,7 +466,7 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
 
 
 	Pde *pde;
-	int r;
+
 	Pte *pageTable;
 
 	struct Page *pageTablePage;
@@ -478,11 +478,11 @@ pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte)
 		pageTable = (Pte *)KADDR(PTE_ADDR(*pde));
 	else {
 		if (!create) return 0;
-		if (r=page_alloc(&pageTablePage) < 0) {
+		if ((page_alloc(&pageTablePage)) < 0) {
 
-			panic("page_alloc failure when doing pgdir_walk\n");
 			return  -E_NO_MEM;
 			//printf("page allocate succeed in pgdir_walk");
+			//panic("page_alloc failure when doing pgdir_walk\n");
 		}
 		pageTablePage->pp_ref++;
 		pageTable = (Pte*)page2kva(pageTablePage);
