@@ -86,46 +86,6 @@ void user_bzero(void *v, u_int n)
 static void
 pgfault(u_int va)
 {
-
-    // writef("fork.c:pgfault():\t va:%x\n",va);
-    // int r;
-    // int i;
-    // u_char *tmp = (u_char*)(UTEXT - BY2PG); // should be available!;
-
-    // va = va & 0xfffff000; // Get the base address of the page
-    // Pte pte = vpd[PDX(va)];
-
-    // // va = va & 0xfffff000; // Get the base address of the page
-    // // if (debug) syscall_putchar("pgfault");
-    // // if (!(err & FEC_WR)) {
-    // //   syscall_putchar("non-writing page fault\n");
-    // //   syscall_env_destroy(0);
-    // // }
-
-    // if (pte & PTE_V)
-    // {
-    //     pte = vpt[VPN(va)];
-    //     if ((pte & PTE_V) && (pte & PTE_COW))
-    //     {
-    //         if ((syscall_mem_alloc(env->env_id, (u_int)tmp, PTE_V | PTE_R)) < 0)
-    //         {
-    //             syscall_putchar("Failed to allocate memory for copy\n");
-    //             syscall_env_destroy(env->env_id);
-    //         }
-    //         user_bcopy((u_char *)va, tmp, BY2PG);
-    //         if (syscall_mem_map(env->env_id, (u_int)tmp, env->env_id, va, (((pte & ~PTE_COW) | PTE_R)) < 0) )
-    //             syscall_env_destroy(env->env_id);
-    //         if (syscall_mem_unmap(env->env_id, (u_int)tmp) < 0)
-    //             syscall_putchar("Failed to unmap in pgfault");
-    //     }
-    // }
-    // else
-    // {
-    //     syscall_putchar("Page fault unexpected\n");
-    //     syscall_env_destroy(env->env_id);
-
-    // }
-
     int r;
     int i;
     va = ROUNDDOWN(va, BY2PG);
@@ -137,22 +97,13 @@ pgfault(u_int va)
     if (syscall_mem_alloc(0, PFTEMP, PTE_V | PTE_R) < 0)
         user_panic("syscall_mem_alloc failed!");
 
-    user_bcopy((void*)va, PFTEMP, BY2PG);
+     user_bcopy((void*)va, PFTEMP, BY2PG);
 
     if (syscall_mem_map(0, PFTEMP, 0, va, PTE_V | PTE_R) < 0)
         user_panic("syscall_mem_map failed!");
 
     if (syscall_mem_unmap(0, PFTEMP) < 0)
         user_panic("syscall_mem_unmap failed!");
-
-    //map the new page at a temporary place
-
-    //copy the content
-
-    //map the page on the appropriate place
-
-    //unmap the temporary place
-
 }
 
 /* Overview:
@@ -171,49 +122,6 @@ pgfault(u_int va)
  * A page with PTE_LIBRARY may have PTE_R at the same time. You
  * should process it correctly.
  */
-// static void
-// duppage(u_int envid, u_int pn)
-// {
-
-
-    // int r;
-    // u_int addr = pn * BY2PG;
-
-    // //writef("duppage.......%x\n", addr);
-
-    // Pte pte;
-    // pte = vpt[VPN(addr)];
-    // if (pte & PTE_V)
-    // {
-    //     if (pte & PTE_LIBRARY)
-    //     {
-    //         // Library pages are always copied no-matter what
-    //         pte = pte| PTE_R|PTE_V;
-    //         if ((r = syscall_mem_map(env->env_id, addr, envid, addr, pte)))
-    //             user_panic("Failing to map 0x%x ro : %e\n", addr, r);
-    //     }
-    //     else
-    //     {
-
-    //         // Otherwise, copy-on-write writeable pages or COW pages
-    //         if ((pte & PTE_R) || (pte & PTE_COW))
-    //         {
-    //             pte = pte | PTE_R|PTE_V | PTE_COW;
-    //             if ((r = syscall_mem_map(env->env_id, addr, envid, addr, pte)))
-    //                 user_panic("Failing to map 0x%x rw : %e\n", addr, r);
-    //             // if ((r = syscall_mem_map(env->env_id, addr, env->env_id, addr, pte)))
-    //             //     user_panic("Failing to remap 0x%x rw : %e\n", addr, r);
-    //         }
-    //         else
-    //         {
-    //             // Else just copy it
-    //             //pte = pte & (PTE_USER);
-    //             if ((r = syscall_mem_map(env->env_id, addr, envid, addr, pte)))
-    //                 user_panic("Failing to map 0x%x ro : %e\n", addr, r);
-    //         }
-    //     }
-    // }
-    //}
 static void
     duppage(u_int envid, u_int pn)
     {
