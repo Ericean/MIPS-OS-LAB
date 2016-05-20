@@ -27,7 +27,7 @@ umain(void)
 		}
 
 		i++;
-		writef("\n@@@@@send 0 from %x to %x\n", syscall_getenvid(), who);
+		writef("\n@@@@@send %d from %x to %x\n",i, syscall_getenvid(), who);
 		ipc_send(who, i, 0, 0);
 
 		if (i == 10) {
