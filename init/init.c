@@ -16,7 +16,8 @@ void mips_init()
 	env_init();
 	trap_init();
 	kclock_init();
-    ENV_CREATE(user_fktest);
+    //ENV_CREATE(user_fktest);
+    ENV_CREATE(user_pingpong);
 
 	panic("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 	while(1);

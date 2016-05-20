@@ -128,6 +128,7 @@ int sys_set_pgfault_handler(int sysno, u_int envid, u_int func, u_int xstacktop)
     e->env_pgfault_handler = func;
     xstacktop = TRUP(xstacktop);
     e->env_xstacktop = xstacktop;
+   // printf("set pgfault handler success...\n");
     return 0;
 }
 
@@ -213,70 +214,70 @@ int sys_mem_alloc(int sysno, u_int envid, u_int va, u_int perm)
 int sys_mem_map(int sysno, u_int srcid, u_int srcva, u_int dstid, u_int dstva,
                 u_int perm)
 {
-    struct Env *srcenv;
-    struct Env *dstenv;
-    struct Page *pp;
-    Pte *ppte;
-
-    srcva = ROUNDDOWN(srcva, BY2PG);
-    dstva = ROUNDDOWN(dstva, BY2PG);
-
-    perm = perm | PTE_V;
-
-    if ((srcva > UTOP) || (dstva > UTOP))
-    {
-        return -E_INVAL;
-    }
-    if (envid2env(srcid, &srcenv, 1))
-    {
-        return -E_BAD_ENV;
-    }
-    if (envid2env(dstid, &dstenv, 1))
-    {
-        return -E_BAD_ENV;
-    }
-    if ((pp = page_lookup(srcenv->env_pgdir, srcva, &ppte)) != NULL)
-    {
-        if (!page_insert(dstenv->env_pgdir, pp, dstva, perm))
-        {
-            return 0;
-        }
-    }
-    else
-    {
-        panic("sys_mem_map failed to map %d : 0x%x  to  %x : 0x%x",
-              srcid, srcva, dstid, dstva);
-    }
-
-    return -E_INVAL;
-    // struct Env *srcenv, *dstenv;
-    // struct Page *page;
-    // Pte *srcpte, *dstpte;
-
-    // if (envid2env(srcid, &srcenv, 1) < 0 ||
-    //     envid2env(dstid, &dstenv, 1) < 0)
-    //     //panic("sys_mem_map not implemented 1");
-    //     return -1;
+    // struct Env *srcenv;
+    // struct Env *dstenv;
+    // struct Page *pp;
+    // Pte *ppte;
 
     // srcva = ROUNDDOWN(srcva, BY2PG);
     // dstva = ROUNDDOWN(dstva, BY2PG);
-    // if ((unsigned int)srcva >= UTOP || srcva != ROUNDDOWN(srcva, BY2PG) ||
-    //     (unsigned int)dstva >= UTOP || dstva != ROUNDDOWN(dstva, BY2PG))
-    //     //panic("sys_mem_map not implemented 2");
-    //     return -1;
 
-    // if ((page = page_lookup(srcenv->env_pgdir, srcva, &srcpte)) == NULL)
-    //     //panic("sys_mem_map not implemented 3");
-    //     return -1;
-    // //printf("%x ",dstva);
-    // if (page_insert(dstenv->env_pgdir, page, dstva, perm) != 0)
-    //     //panic("sys_mem_map not implemented 4");
-    //     return -1;
-    // /*cprintf("map [%08x] %08x(%08x) -> [%08x] %08x(%08x) perm: %x\n",
-    //         srcenv->env_id, srcva, *srcpte,
-    //         dstenv->env_id, dstva, *dstpte, perm);*/
+    // perm = perm | PTE_V;
 
-    // return 0;
+    // if ((srcva > UTOP) || (dstva > UTOP))
+    // {
+    //     return -E_INVAL;
+    // }
+    // if (envid2env(srcid, &srcenv, 1))
+    // {
+    //     return -E_BAD_ENV;
+    // }
+    // if (envid2env(dstid, &dstenv, 1))
+    // {
+    //     return -E_BAD_ENV;
+    // }
+    // if ((pp = page_lookup(srcenv->env_pgdir, srcva, &ppte)) != NULL)
+    // {
+    //     if (!page_insert(dstenv->env_pgdir, pp, dstva, perm))
+    //     {
+    //         return 0;
+    //     }
+    // }
+    // else
+    // {
+    //     panic("sys_mem_map failed to map %d : 0x%x  to  %x : 0x%x",
+    //           srcid, srcva, dstid, dstva);
+    // }
+
+    // return -E_INVAL;
+    struct Env *srcenv, *dstenv;
+    struct Page *page;
+    Pte *srcpte, *dstpte;
+
+    if (envid2env(srcid, &srcenv, 1) < 0 ||
+        envid2env(dstid, &dstenv, 1) < 0)
+        //panic("sys_mem_map not implemented 1");
+        return -1;
+
+    srcva = ROUNDDOWN(srcva, BY2PG);
+    dstva = ROUNDDOWN(dstva, BY2PG);
+    if ((unsigned int)srcva >= UTOP || srcva != ROUNDDOWN(srcva, BY2PG) ||
+        (unsigned int)dstva >= UTOP || dstva != ROUNDDOWN(dstva, BY2PG))
+        //panic("sys_mem_map not implemented 2");
+        return -1;
+
+    if ((page = page_lookup(srcenv->env_pgdir, srcva, &srcpte)) == NULL)
+        //panic("sys_mem_map not implemented 3");
+        return -1;
+    //printf("%x ",dstva);
+    if (page_insert(dstenv->env_pgdir, page, dstva, perm) != 0)
+        //panic("sys_mem_map not implemented 4");
+        return -1;
+    /*cprintf("map [%08x] %08x(%08x) -> [%08x] %08x(%08x) perm: %x\n",
+            srcenv->env_id, srcva, *srcpte,
+            dstenv->env_id, dstva, *dstpte, perm);*/
+
+    return 0;
 }
 
 /* Overview:
@@ -339,9 +340,10 @@ int sys_env_alloc(void)
     if (env_alloc(&env, curenv->env_id) < 0)
           return -E_NO_FREE_ENV;
     bcopy((void*)KERNEL_SP - sizeof(struct Trapframe), &(env->env_tf), sizeof(struct Trapframe));
+    env->env_status = ENV_NOT_RUNNABLE;
+    env->env_pgfault_handler = 0;
     env->env_tf.pc = env->env_tf.cp0_epc;
     env->env_tf.regs[2] = 0;
-    env->env_status = ENV_NOT_RUNNABLE;
 
     return env->env_id;
     // struct Env *child;
@@ -487,7 +489,7 @@ void sys_ipc_recv(int sysno, u_int dstva)
     curenv->env_ipc_dstva = dstva;
     curenv->env_ipc_recving = 1;
     curenv->env_status = ENV_NOT_RUNNABLE;
-    sched_yield();
+    sys_yield();
     return 0;
 
 }

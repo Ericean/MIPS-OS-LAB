@@ -87,46 +87,63 @@ static void
 pgfault(u_int va)
 {
 
-    writef("fork.c:pgfault():\t va:%x\n",va);
-    int r;
-    int i;
-    u_char *tmp = (u_char*)(UTEXT - BY2PG); // should be available!;
-
-    va = va & 0xfffff000; // Get the base address of the page
-    Pte pte = vpd[PDX(va)];
+    // writef("fork.c:pgfault():\t va:%x\n",va);
+    // int r;
+    // int i;
+    // u_char *tmp = (u_char*)(UTEXT - BY2PG); // should be available!;
 
     // va = va & 0xfffff000; // Get the base address of the page
-    // if (debug) syscall_putchar("pgfault");
-    // if (!(err & FEC_WR)) {
-    //   syscall_putchar("non-writing page fault\n");
-    //   syscall_env_destroy(0);
+    // Pte pte = vpd[PDX(va)];
+
+    // // va = va & 0xfffff000; // Get the base address of the page
+    // // if (debug) syscall_putchar("pgfault");
+    // // if (!(err & FEC_WR)) {
+    // //   syscall_putchar("non-writing page fault\n");
+    // //   syscall_env_destroy(0);
+    // // }
+
+    // if (pte & PTE_V)
+    // {
+    //     pte = vpt[VPN(va)];
+    //     if ((pte & PTE_V) && (pte & PTE_COW))
+    //     {
+    //         if ((syscall_mem_alloc(env->env_id, (u_int)tmp, PTE_V | PTE_R)) < 0)
+    //         {
+    //             syscall_putchar("Failed to allocate memory for copy\n");
+    //             syscall_env_destroy(env->env_id);
+    //         }
+    //         user_bcopy((u_char *)va, tmp, BY2PG);
+    //         if (syscall_mem_map(env->env_id, (u_int)tmp, env->env_id, va, (((pte & ~PTE_COW) | PTE_R)) < 0) )
+    //             syscall_env_destroy(env->env_id);
+    //         if (syscall_mem_unmap(env->env_id, (u_int)tmp) < 0)
+    //             syscall_putchar("Failed to unmap in pgfault");
+    //     }
+    // }
+    // else
+    // {
+    //     syscall_putchar("Page fault unexpected\n");
+    //     syscall_env_destroy(env->env_id);
+
     // }
 
-    if (pte & PTE_V)
-    {
-        pte = vpt[VPN(va)];
-        if ((pte & PTE_V) && (pte & PTE_COW))
-        {
-            if ((syscall_mem_alloc(0, (u_int)tmp, PTE_V | PTE_R)) < 0)
-            {
-                syscall_putchar("Failed to allocate memory for copy\n");
-                syscall_env_destroy(0);
-            }
-            user_bcopy((u_char *)va, tmp, BY2PG);
-            if (syscall_mem_map(0, (u_int)tmp, 0, va, (((pte & ~PTE_COW) | PTE_R)) < 0) )
-                syscall_env_destroy(0);
-            if (syscall_mem_unmap(0, (u_int)tmp) < 0)
-                syscall_putchar("Failed to unmap in pgfault");
-        }
-    }
-    else
-    {
-        syscall_putchar("Page fault unexpected\n");
-        syscall_env_destroy(0);
+    int r;
+    int i;
+    va = ROUNDDOWN(va, BY2PG);
+    u_char *PFTEMP = (u_char*)(UTEXT - BY2PG);
 
-    }
+    if (!((*vpt)[VPN(va)] & PTE_COW ))
+        user_panic("PTE_COW failed!");
 
-   
+    if (syscall_mem_alloc(0, PFTEMP, PTE_V | PTE_R) < 0)
+        user_panic("syscall_mem_alloc failed!");
+
+    user_bcopy((void*)va, PFTEMP, BY2PG);
+
+    if (syscall_mem_map(0, PFTEMP, 0, va, PTE_V | PTE_R) < 0)
+        user_panic("syscall_mem_map failed!");
+
+    if (syscall_mem_unmap(0, PFTEMP) < 0)
+        user_panic("syscall_mem_unmap failed!");
 
     //map the new page at a temporary place
 
@@ -154,72 +171,104 @@ pgfault(u_int va)
  * A page with PTE_LIBRARY may have PTE_R at the same time. You
  * should process it correctly.
  */
+// static void
+// duppage(u_int envid, u_int pn)
+// {
+
+
+    // int r;
+    // u_int addr = pn * BY2PG;
+
+    // //writef("duppage.......%x\n", addr);
+
+    // Pte pte;
+    // pte = vpt[VPN(addr)];
+    // if (pte & PTE_V)
+    // {
+    //     if (pte & PTE_LIBRARY)
+    //     {
+    //         // Library pages are always copied no-matter what
+    //         pte = pte| PTE_R|PTE_V;
+    //         if ((r = syscall_mem_map(env->env_id, addr, envid, addr, pte)))
+    //             user_panic("Failing to map 0x%x ro : %e\n", addr, r);
+    //     }
+    //     else
+    //     {
+
+    //         // Otherwise, copy-on-write writeable pages or COW pages
+    //         if ((pte & PTE_R) || (pte & PTE_COW))
+    //         {
+    //             pte = pte | PTE_R|PTE_V | PTE_COW;
+    //             if ((r = syscall_mem_map(env->env_id, addr, envid, addr, pte)))
+    //                 user_panic("Failing to map 0x%x rw : %e\n", addr, r);
+    //             // if ((r = syscall_mem_map(env->env_id, addr, env->env_id, addr, pte)))
+    //             //     user_panic("Failing to remap 0x%x rw : %e\n", addr, r);
+    //         }
+    //         else
+    //         {
+    //             // Else just copy it
+    //             //pte = pte & (PTE_USER);
+    //             if ((r = syscall_mem_map(env->env_id, addr, envid, addr, pte)))
+    //                 user_panic("Failing to map 0x%x ro : %e\n", addr, r);
+    //         }
+    //     }
+    // }
+    //}
 static void
-duppage(u_int envid, u_int pn)
-{
-
-    int r;
-    u_int addr = pn * BY2PG;
-    Pte pte;
-    //u_int perm;
-
-    pte = vpt[VPN(addr)];
-    if (pte & PTE_V)
+    duppage(u_int envid, u_int pn)
     {
-        if (pte & PTE_LIBRARY)
-        {
-            // Library pages are always copied no-matter what
-            pte = pte | PTE_R|PTE_V;
-            if ((r = syscall_mem_map(0, addr, envid, addr, pte)))
-                user_panic("Failing to map 0x%x ro : %e\n", addr, r);
-        }
-        else
-        {
+        int r;
+        u_int addr;
+        Pte pte;
+        u_int perm;
 
-            // Otherwise, copy-on-write writeable pages or COW pages
-            if ((pte & PTE_R) || (pte & PTE_COW))
-            {
-                pte = (((pte & ~PTE_R) | PTE_COW));
-                if ((r = syscall_mem_map(0, addr, envid, addr, pte)))
-                    user_panic("Failing to map 0x%x rw : %e\n", addr, r);
-                if ((r = syscall_mem_map(0, addr, 0, addr, pte)))
-                    user_panic("Failing to remap 0x%x rw : %e\n", addr, r);
+        perm = ((*vpt)[pn]) & 0xfff;
+
+        if ( (perm & PTE_R) != 0 || (perm & PTE_COW) != 0)
+        {
+            if (perm & PTE_LIBRARY) {
+                perm = perm | PTE_V | PTE_R;
             }
-            else
-            {
-                // Else just copy it
-                //pte = pte & (PTE_USER);
-                if ((r = syscall_mem_map(0, addr, envid, addr, pte)))
-                    user_panic("Failing to map 0x%x ro : %e\n", addr, r);
+            else {
+                perm = perm | PTE_V | PTE_R | PTE_COW;
             }
+
+            if (syscall_mem_map(0, pn * BY2PG, envid, pn * BY2PG, perm) == -1)
+                user_panic("duppage failed at 1");
+
+            if (syscall_mem_map(0, pn * BY2PG, 0, pn * BY2PG, perm) == -1)
+                user_panic("duppage failed at 2");
+        }
+        else {
+            if (syscall_mem_map(0, pn * BY2PG, envid, pn * BY2PG, perm) == -1)
+                user_panic("duppage failed at 3");
         }
     }
 
 
 
 
+/* Note:
+ *  I am afraid I have some bad news for you. There is a ridiculous,
+ * annoying and awful bug here. I could find another more adjectives
+ * to qualify it, but you have to reproduce it to understand
+ * how disturbing it is.
+ *  To reproduce this bug, you should follow the steps bellow:
+ *  1. uncomment the statement "writef("");" bellow.
+ *  2. make clean && make
+ *  3. lauch Gxemul and check the result.
+ *  4. you can add serveral `writef("");` and repeat step2~3.
+ *  Then, you will find that additional `writef("");` may lead to
+ * a kernel panic. Interestingly, some students, who faced a strange
+ * kernel panic problem, found that adding a `writef("");` could solve
+ * the problem.
+ *  Unfortunately, we cannot find the code which leads to this bug,
+ * although we have debugged it for serveral weeks. If you face this
+ * bug, we would like to say "Good luck. God bless."
+ */
+// writef("");
 
-    /* Note:
-     *  I am afraid I have some bad news for you. There is a ridiculous,
-     * annoying and awful bug here. I could find another more adjectives
-     * to qualify it, but you have to reproduce it to understand
-     * how disturbing it is.
-     *  To reproduce this bug, you should follow the steps bellow:
-     *  1. uncomment the statement "writef("");" bellow.
-     *  2. make clean && make
-     *  3. lauch Gxemul and check the result.
-     *  4. you can add serveral `writef("");` and repeat step2~3.
-     *  Then, you will find that additional `writef("");` may lead to
-     * a kernel panic. Interestingly, some students, who faced a strange
-     * kernel panic problem, found that adding a `writef("");` could solve
-     * the problem.
-     *  Unfortunately, we cannot find the code which leads to this bug,
-     * although we have debugged it for serveral weeks. If you face this
-     * bug, we would like to say "Good luck. God bless."
-     */
-    // writef("");
 
-}
 
 /* Overview:
  *  User-level fork. Create a child and then copy our address space
@@ -235,7 +284,7 @@ int
 fork(void)
 {
     u_int envid;
-    //int pn;
+    int pn;
     Pte pte;
     u_int addr, addr2;
 
@@ -249,7 +298,7 @@ fork(void)
     set_pgfault_handler(pgfault);
     // alloc a child env
     envid = syscall_env_alloc();
-   
+
     if (envid < 0)
         return -1;//error
 
@@ -260,21 +309,13 @@ fork(void)
     }
     else
     {
-        addr = 0;
-        while (addr < (UTOP - PDMAP))
-        {
-            // don't do this for the exception stack
-            pte = vpd[PDX(addr)];
-            if (pte & PTE_V)
-            {
-                for (addr2 = addr; addr2 < addr + PDMAP; addr2 += BY2PG)
-                    duppage(envid, addr2 / BY2PG);
-            }
-            addr += PDMAP;
+
+        for(pn = 0; pn < ( UTOP / BY2PG) - 1 ; pn ++){
+              if(((*vpd)[pn/PTE2PT]) != 0 && ((*vpt)[pn]) != 0){
+                      duppage(envid, pn);
+                }
         }
-        // Get all final pages up to the USTACKTOP, but not including UXSTACKTOP
-        for (addr2 = addr; addr2 < addr + (PDMAP - BY2PG); addr2 += BY2PG)
-            duppage(envid, addr2 / BY2PG);
+
 
         if (syscall_mem_alloc(envid, UXSTACKTOP - BY2PG, PTE_V | PTE_R))
         {
