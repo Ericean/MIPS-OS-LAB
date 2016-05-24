@@ -262,8 +262,11 @@ ftruncate(int fdnum, u_int size)
 int
 remove(const char *path)
 {
-	// Your code here.
+//  char real_path[MAXPATHLEN];
+//  fix_dir(path, real_path);
+  return fsipc_remove(path);
 }
+
 
 // Overview:
 //	Synchronize disk with buffer cache
