@@ -29,6 +29,10 @@ ide_read(u_int diskno, u_int secno, void *dst, u_int nsecs)
 	int offset = 0;
 
 	while (offset_begin + offset < offset_end) {
+
+		// writef("read_sector begin\n");
+		// writef("diskno: %x\n",diskno);
+		// writef("offset_begin + offset: %x\n",offset_begin + offset);
 		if (read_sector(diskno, offset_begin + offset)) {
 			// copy data from disk buffer(512 bytes, a sector) to destination array.
 			user_bcopy((void *)0x93004000, dst + offset, 0x200);

@@ -46,8 +46,8 @@ clean:
 
 include include.mk
 run:
-	/OSLAB/gxemul -E testmips  -C R3000 -M 64 ./gxemul/vmlinux
+	/OSLAB/gxemul -d ./gxemul/fs.img  -E testmips  -C R3000 -M 64 ./gxemul/vmlinux
 dbug:
-	/OSLAB/gxemul -E testmips -v -V  -C R3000 -M 64 ./gxemul/vmlinux
+	/OSLAB/gxemul -d ./gxemul/fs.img  -E testmips -v -V  -C R3000 -M 64 ./gxemul/vmlinux
 call:
-	/OSLAB/gxemul -E testmips -t  -C R3000 -M 64 ./gxemul/vmlinux
+	/OSLAB/gxemul -d ./gxemul/fs.img  -E testmips -t  -C R3000 -M 64 ./gxemul/vmlinux
