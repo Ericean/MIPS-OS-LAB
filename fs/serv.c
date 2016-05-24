@@ -309,6 +309,7 @@ umain(void)
 
 	serve_init();
 	fs_init();
+	writef("fs init success!\n");
 	fs_test();
 
 	serve();

@@ -58,7 +58,7 @@ ide_write(u_int diskno, u_int secno, void *src, u_int nsecs)
 	int offset_begin = secno * 0x200;
 	int offset_end = offset_begin + nsecs * 0x200;
 	int offset = 0;
-	writef("diskno: %d\n", diskno);
+	//writef("diskno: %d\n", diskno);
 	while (offset_begin + offset < offset_end) {
 			
 		user_bcopy(src + offset,(void *)0x93004000,0x200);

@@ -88,10 +88,9 @@ unmap_block(u_int blockno)
 		return;
 	// Step 2: if this block is used(not free) and dirty, it needs to be synced to disk,
 	// can't be unmap directly.
-	user_assert(block_is_free(blockno) || !block_is_dirty(blockno));
-
-	// Step 3: use `syscall_mem_unmap` to unmap corresponding virtual memory.
-	if ((r = syscall_mem_unmap(0, diskaddr(blockno))) < 0)
+	user_assert(block_is_free(blockno) || !block_is_dirty(blockno)); 
+	// Step 3: use `syscall_mem_unmap` to unmap corresponding virtual memory. 
+	if ((r = syscall_mem_unmap(0, diskaddr(blockno))) < 0) 
 		user_panic("unmap_block: sys_mem_unmap: %e", r);
 	// Step 4: validate result of this unmap operation.
 	user_assert(!block_is_mapped(blockno));
@@ -116,7 +115,6 @@ int
 read_block(u_int blockno, void **blk, u_int *isnew)
 {
 	u_int va;
-
 	// Step 1: validate blockno. Make file the block to read is within the disk.
 	if (super && blockno >= super->s_nblocks) {
 		user_panic("reading non-existent block %08x\n", blockno);

@@ -240,12 +240,8 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 	u_long i;
 	int r;
 	char* map_to = ROUNDDOWN(va,BY2PG);
-	u_long to_alloc =ROUND(sgsize + va&0xFFF, BY2PG);
 	u_long offset = va - ROUNDDOWN(va, BY2PG);
-	//printf("va: %x \n", va);
-	//printf("map_to: %x\n", map_to);
-	//  printf("sgsize: %d \n", sgsize);
-	// printf("bsize: %d \n", bin_size);
+	
 	/*Step 1: load all content of bin into memory. */
 	for (i = 0; i < bin_size; i += BY2PG) {
 		/* Hint: You should alloc a page and increase the reference count of it. */
@@ -257,7 +253,6 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 			panic("Failed to insert bin");
 		bcopy(bin+i,(void*)page2kva(p)+offset,MIN(BY2PG,bin_size-i));
 	}
-	//printf("va mapped to : %x\n",va2pa(env->env_pgdir,va+10) );
 	/*Step 2: alloc pages to reach `sgsize` when `bin_size` < `sgsize`.
     * i has the value of `bin_size` now. */
 	while (i < sgsize) {
@@ -268,9 +263,6 @@ static int load_icode_mapper(u_long va, u_int32_t sgsize,
 		panic("Failed to map bin");
 		i+=BY2PG;
 	}
-	// lcontext(PADDR(env->env_pgdir));
-	// bcopy(bin,(void*)va,bin_size);
-	// printf("success\n");
 	return 0;
 }
 /* Overview:
